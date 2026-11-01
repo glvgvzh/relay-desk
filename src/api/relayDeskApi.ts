@@ -127,6 +127,10 @@ function isWithinSla(ticket: Ticket) {
   return ticket.status === 'resolved' && new Date(ticket.updatedAt) <= new Date(ticket.slaDueAt)
 }
 
+function isOverdue(ticket: Ticket) {
+  return ticket.status !== 'resolved' && new Date(ticket.slaDueAt) < REFERENCE_TIME
+}
+
 export const relayDeskApi = {
   async getShell(signal?: AbortSignal) {
     return request(
@@ -150,7 +154,7 @@ export const relayDeskApi = {
             unassigned: activeTickets.filter((ticket) => !ticket.assigneeId).length,
             highPriority: activeTickets.filter((ticket) => ticket.priority === 'high').length,
             resolved: resolved.length,
-            overdue: activeTickets.filter((ticket) => new Date(ticket.slaDueAt) < REFERENCE_TIME).length,
+            overdue: activeTickets.filter(isOverdue).length,
             slaPercent: resolved.length
               ? Math.round((resolved.filter(isWithinSla).length / resolved.length) * 100)
               : 100,
@@ -182,7 +186,7 @@ export const relayDeskApi = {
             (!filters.status || filters.status === 'all' || ticket.status === filters.status) &&
             (!filters.queueId || filters.queueId === 'all' || ticket.queueId === filters.queueId) &&
             (!filters.priority || filters.priority === 'all' || ticket.priority === filters.priority) &&
-            (!filters.sla || filters.sla === 'all' || new Date(ticket.slaDueAt) < REFERENCE_TIME)
+            (!filters.sla || filters.sla === 'all' || isOverdue(ticket))
           )
         })
         const sort = filters.sort ?? 'updated_desc'

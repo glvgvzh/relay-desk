@@ -103,7 +103,6 @@ export function AppShell() {
               type="search"
               placeholder="Поиск заявок по номеру, теме или автору"
             />
-            <kbd>⌘ K</kbd>
           </form>
           <div className="topbar-actions">
             <Link className="secondary-button" to="/tickets/new">

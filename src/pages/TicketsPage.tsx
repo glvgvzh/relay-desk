@@ -48,10 +48,8 @@ export function TicketsPage() {
       />
 
       <section className="panel ticket-workspace" aria-label="Очередь заявок">
-        <div className="ticket-tabs" role="tablist" aria-label="Представления заявок">
-          <button className="ticket-tab ticket-tab-active" type="button" role="tab" aria-selected="true">
-            Все заявки
-          </button>
+        <div className="ticket-tabs">
+          <h2 className="ticket-view-title">Все заявки</h2>
         </div>
 
         <form className="filters" onSubmit={submitSearch}>

@@ -125,6 +125,17 @@ describe('relayDeskApi', () => {
     expect(dashboard.metrics.unassigned).toBe(report.unassignedTickets)
   })
 
+  it('согласует показатель просроченных заявок с SLA-фильтром', async () => {
+    const [dashboard, overdueList] = await Promise.all([
+      relayDeskApi.getDashboard(),
+      relayDeskApi.getTickets({ sla: 'overdue' }),
+    ])
+
+    expect(overdueList.total).toBe(dashboard.metrics.overdue)
+    expect(overdueList.tickets.every((ticket) => ticket.status !== 'resolved')).toBe(true)
+    expect(overdueList.tickets.some((ticket) => ticket.id === 'RD-119')).toBe(false)
+  })
+
   it('различает публичное сообщение и внутреннюю заметку в контракте', async () => {
     await relayDeskApi.addReply('RD-142', 'Только для команды', true)
     const result = await relayDeskApi.getTicket('RD-142')

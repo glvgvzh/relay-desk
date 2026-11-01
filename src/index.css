@@ -60,7 +60,6 @@ h3 { font-size: 1rem; }
 .global-search:focus-within { border-color: #9bcdbd; background: #fff; }
 .global-search input { min-width: 0; flex: 1; border: 0; outline: 0; color: var(--ink); background: transparent; }
 .search-icon { margin-right: 8px; font-size: 1.15rem; }
-kbd { padding: 3px 7px; border: 1px solid #d4dcda; border-radius: 5px; color: #79847f; background: #fff; font: .68rem/1.2 inherit; }
 .topbar-actions, .page-actions { display: flex; align-items: center; gap: 10px; }
 .icon-button { position: relative; display: grid; place-items: center; width: 39px; height: 39px; border: 1px solid var(--line); border-radius: 9px; background: #fff; cursor: pointer; }
 .notification-dot { position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border: 1px solid #fff; border-radius: 50%; background: #d35c50; }
@@ -146,9 +145,7 @@ tbody th small, .team-table th small { display: block; margin-top: 5px; color: v
 
 .ticket-workspace { overflow: hidden; }
 .ticket-tabs { display: flex; gap: 4px; overflow-x: auto; padding: 0 18px; border-bottom: 1px solid var(--line); }
-.ticket-tab { padding: 16px 11px 13px; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: transparent; font-size: .78rem; cursor: pointer; white-space: nowrap; }
-.ticket-tab span { margin-left: 4px; padding: 2px 6px; border-radius: 999px; background: #edf1ef; font-size: .64rem; }
-.ticket-tab-active { border-bottom-color: var(--accent); color: var(--ink); font-weight: 750; }
+.ticket-view-title { margin: 0; padding: 16px 11px 13px; border-bottom: 2px solid var(--accent); color: var(--ink); font-size: .78rem; font-weight: 750; }
 .filters { display: flex; gap: 9px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
 .filters select, .filter-search { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; color: #3d4845; background: #fff; font-size: .75rem; }
 .filters select { padding: 0 30px 0 10px; }
@@ -307,7 +304,7 @@ tbody th small, .team-table th small { display: block; margin-top: 5px; color: v
 
 @media (max-width: 560px) {
   .topbar { gap: 8px; }
-  .global-search kbd, .icon-button { display: none; }
+  .icon-button { display: none; }
   h1 { font-size: 1.85rem; }
   .metric-grid, .metric-grid-four, .report-metrics, .catalog-grid, .team-summary, .responsibility-grid { grid-template-columns: 1fr; }
   .queue-grid { grid-template-columns: 1fr; }

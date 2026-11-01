@@ -36,6 +36,15 @@ describe('Relay Desk', () => {
     await waitFor(() => expect(screen.queryByRole('link', { name: /порталу расходов/i })).not.toBeInTheDocument())
   })
 
+  it('не маскирует статические подписи под работающие контролы', async () => {
+    renderRoute('/tickets')
+
+    expect(await screen.findByRole('heading', { name: 'Все заявки' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Все заявки' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Все заявки' })).not.toBeInTheDocument()
+    expect(screen.queryByText('⌘ K')).not.toBeInTheDocument()
+  })
+
   it('открывает детальную карточку заявки', async () => {
     renderRoute('/tickets/RD-142')
 
