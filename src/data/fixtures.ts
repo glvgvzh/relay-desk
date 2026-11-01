@@ -1,0 +1,81 @@
+import type { Agent, CatalogService, KnowledgeArticle, Queue, Ticket } from '../domain/types'
+
+export const queues: Queue[] = [
+  { id: 'access', name: 'Доступы и учётные записи', color: '#7c5ce7' },
+  { id: 'workplace', name: 'Рабочее место', color: '#2878c8' },
+  { id: 'finance', name: 'Финансы и документы', color: '#b86622' },
+  { id: 'people', name: 'Сотрудники и офис', color: '#21876f' },
+]
+
+export const agents: Agent[] = [
+  { id: 'agent-1', name: 'Анна Ким', email: 'anna.kim@relay.local', department: 'Поддержка', avatar: 'АК', role: 'Специалист поддержки', status: 'online', activeTickets: 7, capacity: 10 },
+  { id: 'agent-2', name: 'Михаил Воронцов', email: 'm.vorontsov@relay.local', department: 'Поддержка', avatar: 'МВ', role: 'Старший специалист', status: 'busy', activeTickets: 11, capacity: 12 },
+  { id: 'agent-3', name: 'Дарья Соколова', email: 'd.sokolova@relay.local', department: 'Поддержка', avatar: 'ДС', role: 'Специалист поддержки', status: 'online', activeTickets: 5, capacity: 10 },
+  { id: 'agent-4', name: 'Илья Абрамов', email: 'i.abramov@relay.local', department: 'ИТ', avatar: 'ИА', role: 'Инженер второй линии', status: 'offline', activeTickets: 4, capacity: 8 },
+  { id: 'agent-5', name: 'Ольга Юдина', email: 'o.yudina@relay.local', department: 'Операции', avatar: 'ОЮ', role: 'Руководитель поддержки', status: 'online', activeTickets: 2, capacity: 6 },
+]
+
+const people = {
+  marina: { id: 'person-1', name: 'Марина Ли', email: 'marina.li@northstar.ru', department: 'Маркетинг', avatar: 'МЛ' },
+  sergey: { id: 'person-2', name: 'Сергей Орлов', email: 'sergey.orlov@northstar.ru', department: 'Дизайн', avatar: 'СО' },
+  yulia: { id: 'person-3', name: 'Юлия Чен', email: 'yulia.chen@northstar.ru', department: 'Финансы', avatar: 'ЮЧ' },
+  roman: { id: 'person-4', name: 'Роман Фомин', email: 'roman.fomin@northstar.ru', department: 'Продажи', avatar: 'РФ' },
+  alina: { id: 'person-5', name: 'Алина Белова', email: 'alina.belova@northstar.ru', department: 'HR', avatar: 'АБ' },
+  denis: { id: 'person-6', name: 'Денис Котов', email: 'denis.kotov@northstar.ru', department: 'Аналитика', avatar: 'ДК' },
+}
+
+export const tickets: Ticket[] = [
+  {
+    id: 'RD-142', title: 'Нет доступа к порталу расходов', description: 'После смены пароля корпоративная учётная запись больше не проходит авторизацию на портале расходов. В остальных сервисах вход работает.', requester: people.marina, assigneeId: null, queueId: 'access', priority: 'high', status: 'new', createdAt: '2026-11-01T10:12:00+03:00', updatedAt: '2026-11-01T14:20:00+03:00', slaDueAt: '2026-11-01T16:12:00+03:00', tags: ['доступ', 'sso'],
+    messages: [{ id: 'm-1', author: 'Марина Ли', authorRole: 'requester', createdAt: '2026-11-01T10:12:00+03:00', body: 'Коллеги, не могу войти в портал расходов после утренней смены пароля. Ошибка появляется сразу после перенаправления из SSO.' }],
+    activity: [{ id: 'a-1', createdAt: '2026-11-01T10:12:00+03:00', label: 'Заявка создана через портал самообслуживания' }, { id: 'a-2', createdAt: '2026-11-01T10:13:00+03:00', label: 'Автоматически назначен высокий приоритет' }],
+  },
+  {
+    id: 'RD-139', title: 'Новому сотруднику нужны инструменты дизайна', description: 'Подготовить доступ к Figma и общей библиотеке дизайн-системы для нового продуктового дизайнера.', requester: people.sergey, assigneeId: 'agent-1', queueId: 'access', priority: 'medium', status: 'in_progress', createdAt: '2026-11-01T09:04:00+03:00', updatedAt: '2026-11-01T13:54:00+03:00', slaDueAt: '2026-11-02T12:00:00+03:00', tags: ['онбординг', 'дизайн'],
+    messages: [{ id: 'm-2', author: 'Сергей Орлов', authorRole: 'requester', createdAt: '2026-11-01T09:04:00+03:00', body: 'В понедельник выходит новый дизайнер. Нужен доступ к рабочему пространству и библиотекам.' }, { id: 'm-3', author: 'Анна Ким', authorRole: 'agent', createdAt: '2026-11-01T11:18:00+03:00', body: 'Запрос на лицензию согласован. Жду подтверждение от владельца дизайн-пространства.' }],
+    activity: [{ id: 'a-3', createdAt: '2026-11-01T09:04:00+03:00', label: 'Заявка создана из каталога услуг' }, { id: 'a-4', createdAt: '2026-11-01T09:20:00+03:00', label: 'Анна Ким назначена исполнителем' }, { id: 'a-5', createdAt: '2026-11-01T11:18:00+03:00', label: 'Статус изменён на «В работе»' }],
+  },
+  {
+    id: 'RD-137', title: 'Обновить контактные данные для счетов', description: 'Изменить контакт получателя закрывающих документов по подрядчикам.', requester: people.yulia, assigneeId: 'agent-3', queueId: 'finance', priority: 'low', status: 'waiting', createdAt: '2026-10-31T15:40:00+03:00', updatedAt: '2026-11-01T13:28:00+03:00', slaDueAt: '2026-11-03T18:00:00+03:00', tags: ['документы'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-135', title: 'Не работает гостевой Wi-Fi в переговорной', description: 'Участники внешней встречи не могут подключиться к гостевой сети на пятом этаже.', requester: people.roman, assigneeId: 'agent-4', queueId: 'workplace', priority: 'high', status: 'in_progress', createdAt: '2026-10-31T13:10:00+03:00', updatedAt: '2026-11-01T12:42:00+03:00', slaDueAt: '2026-11-01T15:10:00+03:00', tags: ['сеть', 'офис'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-132', title: 'Заказать пропуск для подрядчика', description: 'Нужен разовый пропуск на два дня для специалиста по вентиляции.', requester: people.alina, assigneeId: 'agent-3', queueId: 'people', priority: 'medium', status: 'waiting', createdAt: '2026-10-31T11:25:00+03:00', updatedAt: '2026-11-01T11:58:00+03:00', slaDueAt: '2026-11-02T11:25:00+03:00', tags: ['пропуск'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-128', title: 'Выгрузка отчёта завершается ошибкой', description: 'CSV-отчёт по продажам не формируется при выборе периода больше трёх месяцев.', requester: people.denis, assigneeId: 'agent-2', queueId: 'access', priority: 'critical', status: 'in_progress', createdAt: '2026-10-30T16:12:00+03:00', updatedAt: '2026-11-01T10:46:00+03:00', slaDueAt: '2026-11-01T12:12:00+03:00', tags: ['отчёты', 'ошибка'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-124', title: 'Заменить клавиатуру на рабочем месте', description: 'Несколько клавиш перестали срабатывать.', requester: people.marina, assigneeId: 'agent-1', queueId: 'workplace', priority: 'low', status: 'resolved', createdAt: '2026-10-30T12:05:00+03:00', updatedAt: '2026-10-31T17:20:00+03:00', slaDueAt: '2026-11-03T12:05:00+03:00', tags: ['оборудование'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-119', title: 'Добавить участника в бюджетный центр', description: 'Нужно предоставить руководителю проекта просмотр бюджета направления.', requester: people.yulia, assigneeId: 'agent-2', queueId: 'finance', priority: 'medium', status: 'resolved', createdAt: '2026-10-29T09:15:00+03:00', updatedAt: '2026-10-31T15:40:00+03:00', slaDueAt: '2026-10-31T18:00:00+03:00', tags: ['финансы', 'доступ'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-117', title: 'Настроить переадресацию рабочего номера', description: 'На время отпуска перенаправлять входящие звонки коллеге.', requester: people.roman, assigneeId: null, queueId: 'workplace', priority: 'low', status: 'new', createdAt: '2026-10-28T17:30:00+03:00', updatedAt: '2026-10-31T14:06:00+03:00', slaDueAt: '2026-11-04T17:30:00+03:00', tags: ['телефония'], messages: [], activity: [],
+  },
+  {
+    id: 'RD-112', title: 'Изменить фамилию в корпоративных системах', description: 'Обновить отображаемое имя и адрес почты после изменения документов.', requester: people.alina, assigneeId: 'agent-1', queueId: 'people', priority: 'medium', status: 'in_progress', createdAt: '2026-10-27T10:40:00+03:00', updatedAt: '2026-10-30T16:22:00+03:00', slaDueAt: '2026-11-03T10:40:00+03:00', tags: ['профиль'], messages: [], activity: [],
+  },
+]
+
+export const catalogServices: CatalogService[] = [
+  { id: 'software-access', category: 'Доступы', title: 'Доступ к приложению', description: 'Запросить новую роль или доступ к корпоративному сервису.', deliveryTime: 'до 2 рабочих дней', icon: '↗', popular: true },
+  { id: 'new-employee', category: 'Сотрудники', title: 'Подготовить выход сотрудника', description: 'Учётные записи, оборудование и доступы для первого рабочего дня.', deliveryTime: '3 рабочих дня', icon: '+', popular: true },
+  { id: 'equipment', category: 'Рабочее место', title: 'Заказать оборудование', description: 'Ноутбук, монитор, периферия или замена неисправного устройства.', deliveryTime: 'до 5 рабочих дней', icon: '□', popular: true },
+  { id: 'office-pass', category: 'Офис', title: 'Оформить пропуск', description: 'Постоянный или временный доступ в офис для сотрудника или гостя.', deliveryTime: '1 рабочий день', icon: '◇', popular: false },
+  { id: 'finance-docs', category: 'Финансы', title: 'Запросить документы', description: 'Счёт, акт, справка или копия закрывающих документов.', deliveryTime: 'до 3 рабочих дней', icon: '≡', popular: false },
+  { id: 'other', category: 'Другое', title: 'Задать вопрос поддержке', description: 'Опишите ситуацию, если не нашли подходящую услугу в каталоге.', deliveryTime: 'до 8 часов', icon: '?', popular: false },
+]
+
+export const knowledgeArticles: KnowledgeArticle[] = [
+  { id: 'kb-21', category: 'Учётные записи', title: 'Как восстановить доступ после смены пароля', summary: 'Проверка SSO-сессии, повторный вход и частые причины блокировки.', updatedAt: '2026-10-28', views: 1842, helpfulPercent: 91 },
+  { id: 'kb-18', category: 'Удалённая работа', title: 'Подключение к корпоративной сети из дома', summary: 'Установка клиента, первый вход и проверка соединения.', updatedAt: '2026-10-24', views: 2631, helpfulPercent: 88 },
+  { id: 'kb-16', category: 'Рабочее место', title: 'Подключение второго монитора', summary: 'Совместимые переходники и настройка расположения экранов.', updatedAt: '2026-10-19', views: 912, helpfulPercent: 96 },
+  { id: 'kb-12', category: 'Финансы', title: 'Сроки и порядок сдачи авансового отчёта', summary: 'Какие документы приложить и куда отправить отчёт.', updatedAt: '2026-10-10', views: 1254, helpfulPercent: 84 },
+  { id: 'kb-09', category: 'Безопасность', title: 'Как распознать подозрительное письмо', summary: 'Признаки фишинга и порядок передачи письма команде безопасности.', updatedAt: '2026-09-30', views: 3098, helpfulPercent: 98 },
+  { id: 'kb-04', category: 'Офис', title: 'Бронирование переговорных комнат', summary: 'Правила бронирования, оборудование и отмена встречи.', updatedAt: '2026-09-18', views: 744, helpfulPercent: 89 },
+]
+
