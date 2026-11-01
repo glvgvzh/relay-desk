@@ -1,0 +1,30 @@
+name: Задача
+description: Функциональное, техническое или документационное изменение Relay Desk
+title: ''
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Цель
+      description: Какой проверяемый результат нужен?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Контекст
+      description: Какую проблему пользователя или команды решаем?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Требования и критерии приёмки
+      placeholder: '- ...'
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Ограничения
+      description: Что нельзя менять или что находится вне задачи?

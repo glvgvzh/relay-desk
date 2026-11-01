@@ -1,0 +1,40 @@
+name: Ошибка
+description: Воспроизводимое неправильное поведение Relay Desk
+title: 'fix: '
+labels:
+  - 'type: bug'
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Проблема
+      description: Что работает неправильно и для кого?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Шаги воспроизведения
+      placeholder: |-
+        1. Открыть ...
+        2. Выполнить ...
+        3. Увидеть ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Критерии приёмки
+      placeholder: '- ...'
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Ограничения и дополнительный контекст

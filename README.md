@@ -29,10 +29,18 @@ Relay Desk — внутренний сервис-деск для сотрудн�
 
 Стек намеренно остаётся небольшим. Новая зависимость должна решать конкретную продуктовую или инженерную проблему.
 
-## Локальный запуск
+## Требования
+
+- Node.js 24
+- npm 11 или совместимая версия, поставляемая с Node.js 24
+- Git
+
+## Получение проекта и локальный запуск
 
 ```bash
-npm install
+git clone https://github.com/glvgvzh/relay-desk.git
+cd relay-desk
+npm ci
 npm run dev
 ```
 
@@ -76,6 +84,7 @@ docs/
 - [Модель сервиса и SLA](./docs/product/service-model.md)
 - [Frontend-архитектура](./docs/architecture/0001-frontend-foundation.md)
 - [Граница клиентских данных](./docs/architecture/0002-client-data-boundary.md)
+- [Путеводитель по кодовой базе](./docs/architecture/codebase-guide.md)
 - [Рабочие договорённости](./CONTRIBUTING.md)
 - [Происхождение baseline](./docs/PROJECT_PROVENANCE.md)
 - [Функциональная и техническая приёмка](./docs/acceptance/baseline-acceptance.md)
