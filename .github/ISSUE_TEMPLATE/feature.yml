@@ -1,7 +1,7 @@
 name: Продуктовая задача
 description: Изменение пользовательского поведения Relay Desk
-title: "[RD-]: "
-labels: ["type: feature"]
+title: '[RD-]: '
+labels: ['type: feature']
 body:
   - type: textarea
     id: context
@@ -21,7 +21,7 @@ body:
     id: acceptance
     attributes:
       label: Критерии приёмки
-      placeholder: "- [ ] ..."
+      placeholder: '- [ ] ...'
     validations:
       required: true
   - type: textarea
@@ -29,4 +29,3 @@ body:
     attributes:
       label: Открытые вопросы
       description: Что нужно уточнить до или во время работы?
-

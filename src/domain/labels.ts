@@ -31,4 +31,3 @@ export function formatRelativeDate(value: string) {
   const days = Math.round(hours / 24)
   return `${days} дн. назад`
 }
-

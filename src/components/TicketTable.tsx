@@ -34,14 +34,38 @@ export function TicketTable({ tickets, queues, agents = [] }: TicketTableProps) 
             return (
               <tr key={ticket.id}>
                 <th scope="row">
-                  <Link className="ticket-link" to={`/tickets/${ticket.id}`}>{ticket.title}</Link>
-                  <small>{ticket.id} · {ticket.requester.name}</small>
+                  <Link className="ticket-link" to={`/tickets/${ticket.id}`}>
+                    {ticket.title}
+                  </Link>
+                  <small>
+                    {ticket.id} · {ticket.requester.name}
+                  </small>
                 </th>
-                <td><span className="queue-label"><i style={{ background: queue?.color }} />{queue?.name}</span></td>
-                <td><PriorityBadge priority={ticket.priority} /></td>
-                <td><StatusBadge status={ticket.status} /></td>
-                <td>{agent ? <span className="assignee"><span className="avatar avatar-small">{agent.avatar}</span>{agent.name}</span> : <span className="muted">Не назначен</span>}</td>
-                <td><time dateTime={ticket.updatedAt}>{formatRelativeDate(ticket.updatedAt)}</time></td>
+                <td>
+                  <span className="queue-label">
+                    <i style={{ background: queue?.color }} />
+                    {queue?.name}
+                  </span>
+                </td>
+                <td>
+                  <PriorityBadge priority={ticket.priority} />
+                </td>
+                <td>
+                  <StatusBadge status={ticket.status} />
+                </td>
+                <td>
+                  {agent ? (
+                    <span className="assignee">
+                      <span className="avatar avatar-small">{agent.avatar}</span>
+                      {agent.name}
+                    </span>
+                  ) : (
+                    <span className="muted">Не назначен</span>
+                  )}
+                </td>
+                <td>
+                  <time dateTime={ticket.updatedAt}>{formatRelativeDate(ticket.updatedAt)}</time>
+                </td>
               </tr>
             )
           })}
@@ -50,4 +74,3 @@ export function TicketTable({ tickets, queues, agents = [] }: TicketTableProps) 
     </div>
   )
 }
-

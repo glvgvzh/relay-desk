@@ -1,5 +1,25 @@
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical'
 export type TicketStatus = 'new' | 'in_progress' | 'waiting' | 'resolved'
+export type TicketSort = 'updated_desc' | 'created_desc' | 'priority_desc'
+export type UserRole = 'l1' | 'l2' | 'lead' | 'admin'
+
+export type Organization = {
+  id: string
+  name: string
+  domain: string
+}
+
+export type SupportTeam = {
+  id: string
+  name: string
+  queueIds: string[]
+}
+
+export type TicketCategory = {
+  id: string
+  name: string
+  queueId: string
+}
 
 export type Queue = {
   id: string
@@ -13,10 +33,13 @@ export type Person = {
   email: string
   department: string
   avatar: string
+  organizationId: string
 }
 
 export type Agent = Person & {
   role: string
+  userRole: UserRole
+  teamId: string
   status: 'online' | 'busy' | 'offline'
   activeTickets: number
   capacity: number
@@ -28,6 +51,7 @@ export type TicketMessage = {
   authorRole: 'requester' | 'agent' | 'system'
   createdAt: string
   body: string
+  visibility: 'public' | 'internal'
 }
 
 export type TicketActivity = {
@@ -43,6 +67,7 @@ export type Ticket = {
   requester: Person
   assigneeId: string | null
   queueId: string
+  categoryId: string
   priority: TicketPriority
   status: TicketStatus
   createdAt: string
@@ -61,6 +86,11 @@ export type CatalogService = {
   deliveryTime: string
   icon: string
   popular: boolean
+  queueId: string
+  categoryId: string
+  defaultPriority: TicketPriority
+  requestTitle: string
+  requestDescription: string
 }
 
 export type KnowledgeArticle = {
@@ -71,6 +101,8 @@ export type KnowledgeArticle = {
   updatedAt: string
   views: number
   helpfulPercent: number
+  lead: string
+  sections: Array<{ heading: string; body: string }>
 }
 
 export type TicketFilters = {
@@ -78,6 +110,8 @@ export type TicketFilters = {
   status?: TicketStatus | 'all'
   queueId?: string | 'all'
   priority?: TicketPriority | 'all'
+  sort?: TicketSort
+  sla?: 'all' | 'overdue'
 }
 
 export type CreateTicketInput = {
@@ -86,15 +120,21 @@ export type CreateTicketInput = {
   requesterName: string
   requesterEmail: string
   requesterDepartment: string
+  organizationId: string
   queueId: string
+  categoryId: string
   priority: TicketPriority
   serviceId?: string
 }
 
+export type CurrentUser = Pick<Agent, 'id' | 'name' | 'avatar' | 'role' | 'userRole'>
+
+export type Permission = 'manage_ticket' | 'assign_any_agent' | 'view_management'
+
 export type UpdateTicketInput = {
   status: TicketStatus
   queueId: string
+  categoryId: string
   assigneeId: string | null
   priority: TicketPriority
 }
-

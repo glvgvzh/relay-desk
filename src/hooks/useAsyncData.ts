@@ -5,10 +5,7 @@ type AsyncData<T> =
   | { status: 'success'; data: T; error: null }
   | { status: 'error'; data: null; error: Error }
 
-type Action<T> =
-  | { type: 'loading' }
-  | { type: 'success'; data: T }
-  | { type: 'error'; error: Error }
+type Action<T> = { type: 'loading' } | { type: 'success'; data: T } | { type: 'error'; error: Error }
 
 function reducer<T>(_state: AsyncData<T>, action: Action<T>): AsyncData<T> {
   if (action.type === 'success') return { status: 'success', data: action.data, error: null }
@@ -36,4 +33,3 @@ export function useAsyncData<T>(loader: (signal: AbortSignal) => Promise<T>, dep
 
   return state
 }
-

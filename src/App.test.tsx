@@ -6,7 +6,11 @@ import { App } from './App'
 import { relayDeskApi } from './api/relayDeskApi'
 
 function renderRoute(route: string) {
-  return render(<MemoryRouter initialEntries={[route]}><App /></MemoryRouter>)
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      <App />
+    </MemoryRouter>,
+  )
 }
 
 describe('Relay Desk', () => {
@@ -50,7 +54,7 @@ describe('Relay Desk', () => {
     const user = userEvent.setup()
     renderRoute('/tickets/new')
 
-    await user.type(screen.getByLabelText('Тема'), 'Подключить общий календарь')
+    await user.type(await screen.findByLabelText('Тема'), 'Подключить общий календарь')
     await user.type(screen.getByLabelText('Описание'), 'Нужен доступ к календарю команды продаж.')
     await user.type(screen.getByLabelText('Автор'), 'Ирина Волкова')
     await user.type(screen.getByLabelText('Рабочая почта'), 'irina.volkova@northstar.ru')
@@ -85,5 +89,100 @@ describe('Relay Desk', () => {
     await waitFor(() => expect(screen.getAllByText('Ожидает ответа', { selector: '.badge' }).length).toBeGreaterThan(0))
     expect(screen.getByText('Назначен исполнитель: Анна Ким')).toBeInTheDocument()
   })
-})
 
+  it('переносит выбранную услугу из каталога в заполненную форму', async () => {
+    const user = userEvent.setup()
+    renderRoute('/catalog')
+
+    await user.click(await screen.findByRole('link', { name: 'Оформить услугу «Доступ к приложению»' }))
+
+    expect(await screen.findByRole('region', { name: 'Выбранная услуга' })).toHaveTextContent('Доступ к приложению')
+    expect(screen.getByLabelText('Тема')).toHaveValue('Предоставить доступ к приложению')
+    expect(screen.getByLabelText('Категория')).toHaveValue('software')
+  })
+
+  it('открывает полное содержание статьи базы знаний', async () => {
+    const user = userEvent.setup()
+    renderRoute('/knowledge')
+
+    await user.click(await screen.findByRole('link', { name: 'Как восстановить доступ после смены пароля' }))
+
+    expect(await screen.findByRole('heading', { name: 'Обновите сессию' })).toBeInTheDocument()
+    expect(screen.getByText(/выйдите из корпоративного портала/i)).toBeInTheDocument()
+  })
+
+  it('сохраняет внутреннюю заметку отдельно от публичного ответа', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await user.click(await screen.findByRole('button', { name: 'Добавить внутреннюю заметку' }))
+    await user.type(screen.getByLabelText('Внутренняя заметка'), 'Проверить журнал SSO до ответа клиенту.')
+    await user.click(screen.getByRole('button', { name: 'Сохранить заметку' }))
+
+    expect(
+      await screen.findByText('Проверить журнал SSO до ответа клиенту.', { selector: '.message p' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Внутренняя заметка сохранена.')).toBeInTheDocument()
+    expect(screen.getByText('Внутренняя заметка', { selector: '.internal-label' })).toBeInTheDocument()
+  })
+
+  it('показывает ошибку неуспешного сохранения свойств и оставляет форму открытой', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+    await user.click(await screen.findByRole('button', { name: 'Изменить' }))
+    relayDeskApi.failNextForTests('update', 'Сервис временно недоступен')
+
+    await user.click(screen.getByRole('button', { name: 'Сохранить' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Сервис временно недоступен')
+    expect(screen.getByRole('button', { name: 'Сохранить' })).toBeInTheDocument()
+  })
+
+  it('переводит фокус в поле ответа с клавиатурно доступной кнопки', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+    const button = await screen.findByRole('button', { name: 'Ответить' })
+
+    await user.click(button)
+
+    expect(screen.getByLabelText('Ответ сотруднику')).toHaveFocus()
+  })
+
+  it('показывает отчёты и команду из локального API', async () => {
+    const { unmount } = renderRoute('/reports')
+    expect(await screen.findByRole('heading', { name: 'Отчёты' })).toBeInTheDocument()
+    expect(screen.getByText('10', { selector: '.metric-card strong' })).toBeInTheDocument()
+    unmount()
+    renderRoute('/team')
+    expect(await screen.findByRole('heading', { name: 'Команда поддержки' })).toBeInTheDocument()
+    expect(screen.getAllByText(/Первая линия/).length).toBeGreaterThan(0)
+  })
+
+  it('показывает воспроизводимый error-state чтения очереди', async () => {
+    relayDeskApi.failNextForTests('tickets', 'Очередь временно недоступна')
+    renderRoute('/tickets')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось загрузить данные')
+  })
+
+  it('показывает ошибку создания и сохраняет введённые значения', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/new')
+    const title = await screen.findByLabelText('Тема')
+    await user.type(title, 'Подключить корпоративный календарь')
+    await user.type(screen.getByLabelText('Описание'), 'Нужен доступ к календарю команды продаж.')
+    await user.type(screen.getByLabelText('Автор'), 'Ирина Волкова')
+    await user.type(screen.getByLabelText('Рабочая почта'), 'irina@northstar.ru')
+    await user.type(screen.getByLabelText('Подразделение'), 'Продажи')
+    relayDeskApi.failNextForTests('create', 'Создание временно недоступно')
+    await user.click(screen.getByRole('button', { name: 'Создать заявку' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Создание временно недоступно')
+    expect(title).toHaveValue('Подключить корпоративный календарь')
+  })
+
+  it('скрывает и блокирует управленческие разделы для первой линии', async () => {
+    relayDeskApi.setCurrentUserForTests('agent-1')
+    renderRoute('/reports')
+    expect(await screen.findByRole('heading', { name: 'Раздел недоступен' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Отчёты' })).not.toBeInTheDocument()
+  })
+})
