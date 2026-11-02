@@ -29,6 +29,11 @@ export function TicketsPage() {
     setSearchParams(next, { replace: true })
   }
 
+  function resetAllFilters() {
+    setQueryDraft('')
+    setSearchParams('', { replace: true })
+  }
+
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     updateFilter('q', queryDraft)
@@ -116,7 +121,18 @@ export function TicketsPage() {
         {result.status === 'loading' && <LoadingState label="Загружаем заявки" />}
         {result.status === 'error' && <ErrorState />}
         {result.status === 'success' && result.data.tickets.length === 0 && (
-          <EmptyState title="Заявки не найдены" description="Измените условия поиска или сбросьте фильтры." />
+          <EmptyState
+            title="Заявки не найдены"
+            description={
+              <>
+                Измените условия поиска или{' '}
+                <button className="reset-filters" onClick={resetAllFilters}>
+                  сбросьте фильтры
+                </button>
+                .
+              </>
+            }
+          />
         )}
         {result.status === 'success' && result.data.tickets.length > 0 && (
           <>

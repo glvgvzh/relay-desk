@@ -36,6 +36,43 @@ describe('Relay Desk', () => {
     await waitFor(() => expect(screen.queryByRole('link', { name: /порталу расходов/i })).not.toBeInTheDocument())
   })
 
+  it('кнопка "Сбросить фильтры" устанавливает фокус при управлении с клавиатуры и сбрасывает фильтры при нажатии', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets')
+
+    const input = await screen.findByRole('searchbox', { name: /поиск заявок/i })
+    await user.type(input, 'ggggg')
+    await user.keyboard('{Enter}')
+    const status = screen.getByRole('combobox', { name: 'Статус' })
+    await user.selectOptions(status, 'in_progress')
+    const queue = screen.getByRole('combobox', { name: 'Очередь' })
+    await user.selectOptions(queue, 'workplace')
+    const priority = screen.getByRole('combobox', { name: 'Приоритет' })
+    await user.selectOptions(priority, 'medium')
+    const sort = screen.getByRole('combobox', { name: 'Сортировка' })
+    await user.selectOptions(sort, 'created_desc')
+    const sla = screen.getByRole('combobox', { name: 'SLA' })
+    await user.selectOptions(sla, 'overdue')
+
+    expect(await screen.findByText(/Измените условия поиска или/)).toBeInTheDocument()
+    const resetFiltersButton = screen.getByRole('button', { name: 'сбросьте фильтры' })
+    expect(resetFiltersButton).toBeInTheDocument()
+
+    screen.getByRole('button', { name: 'Найти' }).focus()
+    await user.tab()
+    expect(resetFiltersButton).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(screen.queryByText(/Измените условия поиска или/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'сбросьте фильтры' })).not.toBeInTheDocument()
+    expect(input).toHaveValue('')
+    expect(status).toHaveValue('all')
+    expect(queue).toHaveValue('all')
+    expect(priority).toHaveValue('all')
+    expect(sort).toHaveValue('updated_desc')
+    expect(sla).toHaveValue('all')
+    expect(await screen.findByText('Показано 10 из 10')).toBeInTheDocument()
+  })
+
   it('не маскирует статические подписи под работающие контролы', async () => {
     renderRoute('/tickets')
 
