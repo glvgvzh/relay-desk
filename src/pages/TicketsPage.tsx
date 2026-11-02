@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { relayDeskApi } from '../api/relayDeskApi'
 import { EmptyState, ErrorState, LoadingState } from '../components/PageState'
@@ -16,6 +16,12 @@ export function TicketsPage() {
   const priority = (searchParams.get('priority') ?? 'all') as TicketPriority | 'all'
   const sort = (searchParams.get('sort') ?? 'updated_desc') as TicketSort
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
+
+  const [prevQuery, setPrevQuery] = useState(query)
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setQueryDraft(query)
+  }
 
   const result = useAsyncData(
     (signal) => relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla }, signal),
@@ -38,10 +44,6 @@ export function TicketsPage() {
     event.preventDefault()
     updateFilter('q', queryDraft)
   }
-
-  useEffect(() => {
-    setQueryDraft(query)
-  }, [query])
 
   return (
     <>
