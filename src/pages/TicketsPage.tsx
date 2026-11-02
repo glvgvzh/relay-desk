@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { relayDeskApi } from '../api/relayDeskApi'
 import { EmptyState, ErrorState, LoadingState } from '../components/PageState'
@@ -38,6 +38,10 @@ export function TicketsPage() {
     event.preventDefault()
     updateFilter('q', queryDraft)
   }
+
+  useEffect(() => {
+    setQueryDraft(query)
+  }, [query])
 
   return (
     <>
