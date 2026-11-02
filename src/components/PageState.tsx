@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export function LoadingState({ label = 'Загружаем данные' }: { label?: string }) {
   return (
     <div className="loading-state" role="status">
@@ -19,7 +21,7 @@ export function ErrorState({ message = 'Не удалось загрузить �
   )
 }
 
-export function EmptyState({ title, description }: { title: string; description: string }) {
+export function EmptyState({ title, description }: { title: string; description: ReactNode }) {
   return (
     <div className="empty-state">
       <span className="empty-icon" aria-hidden="true">

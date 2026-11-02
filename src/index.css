@@ -161,6 +161,7 @@ tbody th small, .team-table th small { display: block; margin-top: 5px; color: v
 .error-state strong, .empty-state h2 { margin-bottom: 6px; font-size: 1.05rem; }
 .error-state p, .empty-state p { color: var(--muted); }
 .empty-icon { display: grid; place-items: center; min-width: 45px; height: 45px; margin-bottom: 12px; border-radius: 50%; color: var(--accent); background: var(--accent-soft); font-weight: 800; }
+.reset-filters { padding: 0; background: none; border: none; cursor: pointer; color: var(--accent); text-decoration: underline; }
 .page-not-found { min-height: 60vh; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
