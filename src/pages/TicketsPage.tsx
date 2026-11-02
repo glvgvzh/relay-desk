@@ -17,6 +17,12 @@ export function TicketsPage() {
   const sort = (searchParams.get('sort') ?? 'updated_desc') as TicketSort
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
 
+  const [prevQuery, setPrevQuery] = useState(query)
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setQueryDraft(query)
+  }
+
   const result = useAsyncData(
     (signal) => relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla }, signal),
     `tickets:${query}:${status}:${queueId}:${priority}:${sort}:${sla}`,

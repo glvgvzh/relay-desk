@@ -36,6 +36,23 @@ describe('Relay Desk', () => {
     await waitFor(() => expect(screen.queryByRole('link', { name: /порталу расходов/i })).not.toBeInTheDocument())
   })
 
+  it('поле поиска заявок синхронизируется с URL и не сбрасывается при изменении других фильтров', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets')
+    const globalSearch = await screen.findByPlaceholderText('Поиск заявок по номеру, теме или автору')
+    const innerSearch = await screen.findByPlaceholderText('Номер, тема или автор')
+
+    await user.type(globalSearch, 'test')
+    await user.keyboard('{Enter}')
+    expect(innerSearch).toHaveValue('test')
+
+    await user.clear(innerSearch)
+    await user.type(innerSearch, 'new test')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Очередь' }), 'workplace')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Сортировка' }), 'created_desc')
+    expect(innerSearch).toHaveValue('new test')
+  })
+
   it('кнопка "Сбросить фильтры" устанавливает фокус при управлении с клавиатуры и сбрасывает фильтры при нажатии', async () => {
     const user = userEvent.setup()
     renderRoute('/tickets')
