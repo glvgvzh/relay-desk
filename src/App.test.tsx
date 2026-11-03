@@ -25,6 +25,15 @@ describe('Relay Desk', () => {
     expect(screen.getByRole('heading', { name: /команда на линии/i })).toBeInTheDocument()
   })
 
+  it('при переходе из сводки в раздел "Просрочено" переводит в раздел заявок с установленным фильтром', async () => {
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    await user.click(await screen.findByRole('link', { name: /просрочено/i }))
+    expect(await screen.findByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+    expect(await screen.findByRole('combobox', { name: 'SLA' })).toHaveValue('overdue')
+  })
+
   it('фильтрует очередь заявок по поисковому запросу', async () => {
     const user = userEvent.setup()
     renderRoute('/tickets')
