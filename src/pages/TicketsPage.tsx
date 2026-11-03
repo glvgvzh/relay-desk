@@ -145,17 +145,7 @@ export function TicketsPage() {
           <>
             <TicketTable tickets={result.data.tickets} queues={result.data.queues} agents={result.data.agents} />
             <footer className="table-footer">
-              <span>
-                Показано {result.data.total} из {result.data.total}
-              </span>
-              <div>
-                <button type="button" disabled>
-                  Назад
-                </button>
-                <button type="button" disabled>
-                  Вперёд
-                </button>
-              </div>
+              <span>Всего: {result.data.total}</span>
             </footer>
           </>
         )}

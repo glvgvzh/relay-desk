@@ -153,7 +153,6 @@ tbody th small, .team-table th small { display: block; margin-top: 5px; color: v
 .filter-search { display: flex; align-items: center; min-width: 240px; padding: 0 10px; }
 .filter-search input { min-width: 0; flex: 1; margin-left: 7px; border: 0; outline: 0; }
 .table-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .72rem; }
-.table-footer button { margin-left: 6px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 
 .loading-state, .error-state, .empty-state { display: grid; place-items: center; min-height: 280px; padding: 40px; text-align: center; }
 .loading-state { align-content: center; gap: 12px; color: var(--muted); }
