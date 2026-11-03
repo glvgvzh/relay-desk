@@ -90,7 +90,7 @@ describe('Relay Desk', () => {
     expect(priority).toHaveValue('all')
     expect(sort).toHaveValue('updated_desc')
     expect(sla).toHaveValue('all')
-    expect(await screen.findByText('Показано 10 из 10')).toBeInTheDocument()
+    expect(await screen.findByText('Всего: 10')).toBeInTheDocument()
   })
 
   it('формирует варианты очередей из данных API', async () => {
@@ -132,6 +132,14 @@ describe('Relay Desk', () => {
     expect(screen.queryByRole('button', { name: 'Все заявки' })).not.toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Все заявки' })).not.toBeInTheDocument()
     expect(screen.queryByText('⌘ K')).not.toBeInTheDocument()
+  })
+
+  it('не отображает кнопки пагинации и показывает количество заявок', async () => {
+    renderRoute('/tickets')
+
+    await screen.findByText('Всего: 10')
+    expect(screen.queryByRole('button', { name: 'Назад' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Вперёд' })).not.toBeInTheDocument()
   })
 
   it('открывает детальную карточку заявки', async () => {
