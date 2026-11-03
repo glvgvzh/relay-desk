@@ -88,10 +88,11 @@ export function TicketsPage() {
             <span className="sr-only">Очередь</span>
             <select value={queueId} onChange={(event) => updateFilter('queue', event.target.value)}>
               <option value="all">Все очереди</option>
-              <option value="access">Доступы</option>
-              <option value="workplace">Рабочее место</option>
-              <option value="finance">Финансы</option>
-              <option value="people">Сотрудники</option>
+              {result.data?.queues.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
           </label>
           <label>

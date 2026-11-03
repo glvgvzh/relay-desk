@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { relayDeskApi } from './api/relayDeskApi'
 
@@ -15,6 +15,7 @@ function renderRoute(route: string) {
 
 describe('Relay Desk', () => {
   beforeEach(() => relayDeskApi.resetForTests())
+  afterEach(() => vi.restoreAllMocks())
 
   it('показывает продуктовую сводку', async () => {
     renderRoute('/dashboard')
@@ -48,6 +49,7 @@ describe('Relay Desk', () => {
 
     await user.clear(innerSearch)
     await user.type(innerSearch, 'new test')
+    await screen.findByRole('option', { name: 'Рабочее место' })
     await user.selectOptions(screen.getByRole('combobox', { name: 'Очередь' }), 'workplace')
     await user.selectOptions(screen.getByRole('combobox', { name: 'Сортировка' }), 'created_desc')
     expect(innerSearch).toHaveValue('new test')
@@ -63,6 +65,7 @@ describe('Relay Desk', () => {
     const status = screen.getByRole('combobox', { name: 'Статус' })
     await user.selectOptions(status, 'in_progress')
     const queue = screen.getByRole('combobox', { name: 'Очередь' })
+    await screen.findByRole('option', { name: 'Рабочее место' })
     await user.selectOptions(queue, 'workplace')
     const priority = screen.getByRole('combobox', { name: 'Приоритет' })
     await user.selectOptions(priority, 'medium')
@@ -88,6 +91,38 @@ describe('Relay Desk', () => {
     expect(sort).toHaveValue('updated_desc')
     expect(sla).toHaveValue('all')
     expect(await screen.findByText('Показано 10 из 10')).toBeInTheDocument()
+  })
+
+  it('формирует варианты очередей из данных API', async () => {
+    const originalData = await relayDeskApi.getTickets()
+    vi.spyOn(relayDeskApi, 'getTickets').mockResolvedValue({
+      ...originalData,
+      queues: [
+        {
+          id: 'test-id',
+          name: 'test-name',
+          color: '#000000',
+        },
+      ],
+    })
+    renderRoute('/tickets')
+
+    const option = await screen.findByRole('option', { name: 'test-name' })
+    expect(option).toBeInTheDocument()
+    expect(option).toHaveValue('test-id')
+    expect(screen.queryByRole('option', { name: 'Доступы' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Рабочее место' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Финансы' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Сотрудники' })).not.toBeInTheDocument()
+  })
+
+  it('восстанавливает выбранную очередь из URL после загрузки данных', async () => {
+    renderRoute('/tickets?queue=workplace')
+
+    const option = screen.getByRole('combobox', { name: 'Очередь' })
+    await waitFor(() => {
+      expect(option).toHaveValue('workplace')
+    })
   })
 
   it('не маскирует статические подписи под работающие контролы', async () => {
