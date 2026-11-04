@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -82,12 +82,14 @@ describe('Relay Desk', () => {
     await user.selectOptions(sort, 'created_desc')
     const sla = screen.getByRole('combobox', { name: 'SLA' })
     await user.selectOptions(sla, 'overdue')
+    const assignee = screen.getByRole('combobox', { name: 'Исполнитель' })
+    await user.selectOptions(assignee, 'unassigned')
 
     expect(await screen.findByText(/Измените условия поиска или/)).toBeInTheDocument()
     const resetFiltersButton = screen.getByRole('button', { name: 'сбросьте фильтры' })
     expect(resetFiltersButton).toBeInTheDocument()
 
-    screen.getByRole('button', { name: 'Найти' }).focus()
+    assignee.focus()
     await user.tab()
     expect(resetFiltersButton).toHaveFocus()
     await user.keyboard('{Enter}')
@@ -132,6 +134,30 @@ describe('Relay Desk', () => {
     await waitFor(() => {
       expect(option).toHaveValue('workplace')
     })
+  })
+
+  it('при прямом открытии неназначенных заявок по ссылке фильтр выбран в интерфейсе и показываются нужные заявки', async () => {
+    renderRoute('/tickets?assignee=unassigned')
+
+    const option = screen.getByRole('combobox', { name: 'Исполнитель' })
+    expect(option).toHaveValue('unassigned')
+
+    expect(await screen.findByText('Всего: 2')).toBeInTheDocument()
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    expect(rows).toHaveLength(3)
+  })
+
+  it('при прямом открытии неназначенных заявок и ручном сбросе фильтра отображаются все заявки', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets?assignee=unassigned')
+
+    const option = screen.getByRole('combobox', { name: 'Исполнитель' })
+    await user.selectOptions(option, 'all')
+    expect(await screen.findByText('Всего: 10')).toBeInTheDocument()
+    const table = screen.getByRole('table')
+    const rows = within(table).getAllByRole('row')
+    expect(rows).toHaveLength(11)
   })
 
   it('не маскирует статические подписи под работающие контролы', async () => {

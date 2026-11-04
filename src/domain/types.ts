@@ -112,6 +112,7 @@ export type TicketFilters = {
   priority?: TicketPriority | 'all'
   sort?: TicketSort
   sla?: 'all' | 'overdue'
+  assignee?: 'all' | 'unassigned'
 }
 
 export type CreateTicketInput = {
