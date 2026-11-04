@@ -16,6 +16,7 @@ export function TicketsPage() {
   const priority = (searchParams.get('priority') ?? 'all') as TicketPriority | 'all'
   const sort = (searchParams.get('sort') ?? 'updated_desc') as TicketSort
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
+  const assignee = (searchParams.get('assignee') ?? 'all') as 'all' | 'unassigned'
 
   const [prevQuery, setPrevQuery] = useState(query)
   if (query !== prevQuery) {
@@ -24,8 +25,8 @@ export function TicketsPage() {
   }
 
   const result = useAsyncData(
-    (signal) => relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla }, signal),
-    `tickets:${query}:${status}:${queueId}:${priority}:${sort}:${sla}`,
+    (signal) => relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla, assignee }, signal),
+    `tickets:${query}:${status}:${queueId}:${priority}:${sort}:${sla}:${assignee}`,
   )
 
   function updateFilter(name: string, value: string) {
@@ -74,55 +75,64 @@ export function TicketsPage() {
               placeholder="Номер, тема или автор"
             />
           </label>
-          <label>
-            <span className="sr-only">Статус</span>
-            <select value={status} onChange={(event) => updateFilter('status', event.target.value)}>
-              <option value="all">Все статусы</option>
-              <option value="new">Новые</option>
-              <option value="in_progress">В работе</option>
-              <option value="waiting">Ожидают ответа</option>
-              <option value="resolved">Решённые</option>
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Очередь</span>
-            <select value={queueId} onChange={(event) => updateFilter('queue', event.target.value)}>
-              <option value="all">Все очереди</option>
-              {result.data?.queues.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Приоритет</span>
-            <select value={priority} onChange={(event) => updateFilter('priority', event.target.value)}>
-              <option value="all">Любой приоритет</option>
-              <option value="critical">Критический</option>
-              <option value="high">Высокий</option>
-              <option value="medium">Средний</option>
-              <option value="low">Низкий</option>
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Сортировка</span>
-            <select value={sort} onChange={(event) => updateFilter('sort', event.target.value)}>
-              <option value="updated_desc">Недавно обновлённые</option>
-              <option value="created_desc">Сначала новые</option>
-              <option value="priority_desc">Сначала важные</option>
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">SLA</span>
-            <select value={sla} onChange={(event) => updateFilter('sla', event.target.value)}>
-              <option value="all">Любой SLA</option>
-              <option value="overdue">Только просроченные</option>
-            </select>
-          </label>
           <button className="filter-submit" type="submit">
             Найти
           </button>
+          <div className="filters-grid">
+            <label>
+              <span className="sr-only">Статус</span>
+              <select value={status} onChange={(event) => updateFilter('status', event.target.value)}>
+                <option value="all">Все статусы</option>
+                <option value="new">Новые</option>
+                <option value="in_progress">В работе</option>
+                <option value="waiting">Ожидают ответа</option>
+                <option value="resolved">Решённые</option>
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Очередь</span>
+              <select value={queueId} onChange={(event) => updateFilter('queue', event.target.value)}>
+                <option value="all">Все очереди</option>
+                {result.data?.queues.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Приоритет</span>
+              <select value={priority} onChange={(event) => updateFilter('priority', event.target.value)}>
+                <option value="all">Любой приоритет</option>
+                <option value="critical">Критический</option>
+                <option value="high">Высокий</option>
+                <option value="medium">Средний</option>
+                <option value="low">Низкий</option>
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Сортировка</span>
+              <select value={sort} onChange={(event) => updateFilter('sort', event.target.value)}>
+                <option value="updated_desc">Недавно обновлённые</option>
+                <option value="created_desc">Сначала новые</option>
+                <option value="priority_desc">Сначала важные</option>
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">SLA</span>
+              <select value={sla} onChange={(event) => updateFilter('sla', event.target.value)}>
+                <option value="all">Любой SLA</option>
+                <option value="overdue">Только просроченные</option>
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Исполнитель</span>
+              <select value={assignee} onChange={(event) => updateFilter('assignee', event.target.value)}>
+                <option value="all">Любой исполнитель</option>
+                <option value="unassigned">Только без исполнителя</option>
+              </select>
+            </label>
+          </div>
         </form>
 
         {result.status === 'loading' && <LoadingState label="Загружаем заявки" />}
