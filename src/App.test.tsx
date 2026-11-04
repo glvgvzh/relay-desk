@@ -25,13 +25,38 @@ describe('Relay Desk', () => {
     expect(screen.getByRole('heading', { name: /команда на линии/i })).toBeInTheDocument()
   })
 
-  it('при переходе из сводки в раздел "Просрочено" переводит в раздел заявок с установленным фильтром', async () => {
+  it('при переходе из сводки в раздел "Просрочено" переводит в раздел заявок с установленным фильтром по SLA', async () => {
     const user = userEvent.setup()
     renderRoute('/dashboard')
 
     await user.click(await screen.findByRole('link', { name: /просрочено/i }))
     expect(await screen.findByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
     expect(await screen.findByRole('combobox', { name: 'SLA' })).toHaveValue('overdue')
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Выгрузка отчёта завершается ошибкой/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-128',
+    )
+    expect(screen.getByText('Всего: 1')).toBeInTheDocument()
+  })
+
+  it('при переходе из сводки в раздел "Без исполнителя" переводит в раздел активных заявок с установленным фильтром по исполнителю', async () => {
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    await user.click(await screen.findByRole('link', { name: /Без исполнителя/i }))
+    expect(await screen.findByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+    expect(await screen.findByRole('combobox', { name: 'Исполнитель' })).toHaveValue('unassigned')
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Нет доступа к порталу расходов/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-142',
+    )
+    expect(within(table).getByRole('link', { name: /Настроить переадресацию рабочего номера/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-117',
+    )
+    expect(screen.getByText('Всего: 2')).toBeInTheDocument()
   })
 
   it('фильтрует очередь заявок по поисковому запросу', async () => {
