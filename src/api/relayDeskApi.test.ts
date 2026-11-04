@@ -1,14 +1,43 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { relayDeskApi } from './relayDeskApi'
+import { tickets } from '../data/fixtures'
 
 describe('relayDeskApi', () => {
   beforeEach(() => relayDeskApi.resetForTests())
+  afterEach(() => localStorage.clear())
 
   it('применяет несколько фильтров к очереди заявок', async () => {
     const result = await relayDeskApi.getTickets({ queueId: 'access', priority: 'high' })
 
     expect(result.tickets).toHaveLength(1)
     expect(result.tickets[0].id).toBe('RD-142')
+  })
+
+  it('фильтрует заявки по неназначенным исполнителям и возвращает только активные заявки', async () => {
+    localStorage.setItem(
+      'relay-desk:tickets:v1',
+      JSON.stringify([...tickets, { ...tickets[0], status: 'resolved', id: 'TEST', assigneeId: null }]),
+    )
+    relayDeskApi.reloadFromStorageForTests()
+    const result = await relayDeskApi.getTickets({ assignee: 'unassigned' })
+
+    expect(result.tickets).toHaveLength(2)
+    expect(result.tickets[0].id).toBe('RD-142')
+    expect(result.tickets[1].id).toBe('RD-117')
+  })
+
+  it('при сброшенном фильтре по исполнителю решенные заявки отображаются', async () => {
+    localStorage.setItem(
+      'relay-desk:tickets:v1',
+      JSON.stringify([...tickets, { ...tickets[0], status: 'resolved', id: 'TEST', assigneeId: null }]),
+    )
+    relayDeskApi.reloadFromStorageForTests()
+    const result = await relayDeskApi.getTickets({ assignee: 'all' })
+
+    expect(result.tickets.length).toBe(11)
+    const resolvedTickets = result.tickets.filter((ticket) => ticket.status === 'resolved')
+    expect(resolvedTickets.length).toBe(3)
+    expect(resolvedTickets.some((ticket) => ticket.id === 'TEST')).toBeTruthy()
   })
 
   it('возвращает null для неизвестной заявки', async () => {

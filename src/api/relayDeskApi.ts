@@ -186,7 +186,10 @@ export const relayDeskApi = {
             (!filters.status || filters.status === 'all' || ticket.status === filters.status) &&
             (!filters.queueId || filters.queueId === 'all' || ticket.queueId === filters.queueId) &&
             (!filters.priority || filters.priority === 'all' || ticket.priority === filters.priority) &&
-            (!filters.sla || filters.sla === 'all' || isOverdue(ticket))
+            (!filters.sla || filters.sla === 'all' || isOverdue(ticket)) &&
+            (!filters.assignee ||
+              filters.assignee === 'all' ||
+              (ticket.assigneeId === null && ticket.status !== 'resolved'))
           )
         })
         const sort = filters.sort ?? 'updated_desc'

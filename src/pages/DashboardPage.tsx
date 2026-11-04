@@ -19,7 +19,7 @@ export function DashboardPage() {
       value: metrics.unassigned,
       hint: 'требуют распределения',
       tone: 'neutral',
-      to: '/tickets',
+      to: '/tickets?assignee=unassigned',
     },
     {
       label: 'Высокий приоритет',
