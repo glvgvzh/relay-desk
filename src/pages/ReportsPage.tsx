@@ -7,7 +7,7 @@ import { useAsyncData } from '../hooks/useAsyncData'
 export function ReportsPage() {
   const result = useAsyncData((signal) => relayDeskApi.getReports(signal), 'reports')
   if (result.status === 'loading') return <LoadingState label="Строим отчёты" />
-  if (result.status === 'error') return <ErrorState />
+  if (result.status === 'error') return <ErrorState onRetry={result.retry} />
   const max = Math.max(...result.data.weeklyVolume, 1)
   const weeklyTotal = result.data.weeklyVolume.reduce((sum, value) => sum + value, 0)
   return (
