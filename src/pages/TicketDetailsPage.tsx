@@ -69,7 +69,7 @@ export function TicketDetailsPage() {
   }
 
   if (result.status === 'loading') return <LoadingState label="Открываем заявку" />
-  if (result.status === 'error') return <ErrorState />
+  if (result.status === 'error') return <ErrorState onRetry={result.retry} />
   if (!result.data) return <TicketNotFound />
 
   const { ticket, queues, agents, categories, organizations, currentUser, canAssignAny } = result.data

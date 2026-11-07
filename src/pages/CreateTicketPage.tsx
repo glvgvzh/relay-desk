@@ -19,7 +19,8 @@ export function CreateTicketPage() {
   const [error, setError] = useState('')
 
   if (formDataResult.status === 'loading') return <LoadingState label="Подготавливаем форму" />
-  if (formDataResult.status === 'error') return <ErrorState message="Не удалось загрузить справочники для заявки." />
+  if (formDataResult.status === 'error')
+    return <ErrorState message="Не удалось загрузить справочники для заявки." onRetry={formDataResult.retry} />
 
   const { service, queues, categories, organizations } = formDataResult.data
   const selectedQueueId = queueId ?? service?.queueId ?? 'access'

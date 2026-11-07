@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useReducer } from 'react'
+import { useEffect, useEffectEvent, useReducer, useState } from 'react'
 
 type AsyncData<T> =
   | { status: 'loading'; data: null; error: null }
@@ -13,9 +13,17 @@ function reducer<T>(_state: AsyncData<T>, action: Action<T>): AsyncData<T> {
   return { status: 'loading', data: null, error: null }
 }
 
-export function useAsyncData<T>(loader: (signal: AbortSignal) => Promise<T>, dependencyKey: string): AsyncData<T> {
+export function useAsyncData<T>(
+  loader: (signal: AbortSignal) => Promise<T>,
+  dependencyKey: string,
+): AsyncData<T> & { retry: () => void } {
   const [state, dispatch] = useReducer(reducer<T>, { status: 'loading', data: null, error: null })
   const load = useEffectEvent(loader)
+  const [retryCount, setRetryCount] = useState(0)
+
+  function retry() {
+    setRetryCount((prev) => prev + 1)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -29,7 +37,7 @@ export function useAsyncData<T>(loader: (signal: AbortSignal) => Promise<T>, dep
       })
 
     return () => controller.abort()
-  }, [dependencyKey])
+  }, [dependencyKey, retryCount])
 
-  return state
+  return { ...state, retry }
 }

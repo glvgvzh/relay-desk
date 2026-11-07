@@ -8,7 +8,7 @@ export function KnowledgeBasePage() {
   const [category, setCategory] = useState('all')
   const result = useAsyncData((signal) => relayDeskApi.getKnowledgeBase(signal), 'knowledge')
   if (result.status === 'loading') return <LoadingState label="Загружаем базу знаний" />
-  if (result.status === 'error') return <ErrorState />
+  if (result.status === 'error') return <ErrorState onRetry={result.retry} />
 
   const categories = [...new Set(result.data.map((article) => article.category))]
   const normalizedQuery = query.trim().toLocaleLowerCase('ru')

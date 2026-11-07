@@ -10,7 +10,7 @@ export function DashboardPage() {
   const dashboard = useAsyncData((signal) => relayDeskApi.getDashboard(signal), 'dashboard')
 
   if (dashboard.status === 'loading') return <LoadingState label="Собираем сводку" />
-  if (dashboard.status === 'error') return <ErrorState />
+  if (dashboard.status === 'error') return <ErrorState onRetry={dashboard.retry} />
 
   const { metrics, recentTickets, queues, agents } = dashboard.data
   const cards = [

@@ -7,7 +7,7 @@ export function KnowledgeArticlePage() {
   const { articleId = '' } = useParams()
   const result = useAsyncData((signal) => relayDeskApi.getKnowledgeArticle(articleId, signal), `knowledge:${articleId}`)
   if (result.status === 'loading') return <LoadingState label="Открываем инструкцию" />
-  if (result.status === 'error') return <ErrorState message="Не удалось загрузить инструкцию." />
+  if (result.status === 'error') return <ErrorState message="Не удалось загрузить инструкцию." onRetry={result.retry} />
   if (!result.data)
     return (
       <section className="empty-state">

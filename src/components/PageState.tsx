@@ -9,12 +9,18 @@ export function LoadingState({ label = 'Загружаем данные' }: { la
   )
 }
 
-export function ErrorState({ message = 'Не удалось загрузить данные.' }: { message?: string }) {
+export function ErrorState({
+  message = 'Не удалось загрузить данные.',
+  onRetry,
+}: {
+  message?: string
+  onRetry: () => void
+}) {
   return (
     <div className="error-state" role="alert">
       <strong>Что-то пошло не так</strong>
       <p>{message}</p>
-      <button className="secondary-button" type="button" onClick={() => window.location.reload()}>
+      <button className="secondary-button" type="button" onClick={onRetry}>
         Повторить
       </button>
     </div>

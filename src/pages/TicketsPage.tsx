@@ -136,7 +136,7 @@ export function TicketsPage() {
         </form>
 
         {result.status === 'loading' && <LoadingState label="Загружаем заявки" />}
-        {result.status === 'error' && <ErrorState />}
+        {result.status === 'error' && <ErrorState onRetry={result.retry} />}
         {result.status === 'success' && result.data.tickets.length === 0 && (
           <EmptyState
             title="Заявки не найдены"

@@ -9,7 +9,7 @@ export function CatalogPage() {
   const [query, setQuery] = useState('')
   const result = useAsyncData((signal) => relayDeskApi.getCatalog(signal), 'catalog')
   if (result.status === 'loading') return <LoadingState label="Загружаем каталог" />
-  if (result.status === 'error') return <ErrorState />
+  if (result.status === 'error') return <ErrorState onRetry={result.retry} />
 
   const normalizedQuery = query.trim().toLocaleLowerCase('ru')
   const services = result.data.filter(

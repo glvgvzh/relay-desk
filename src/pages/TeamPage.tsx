@@ -8,7 +8,7 @@ export function TeamPage() {
   const [query, setQuery] = useState('')
   const result = useAsyncData((signal) => relayDeskApi.getTeam(signal), 'team')
   if (result.status === 'loading') return <LoadingState label="Загружаем команду" />
-  if (result.status === 'error') return <ErrorState />
+  if (result.status === 'error') return <ErrorState onRetry={result.retry} />
 
   const normalizedQuery = query.trim().toLocaleLowerCase('ru')
   const visibleAgents = result.data.agents.filter(
