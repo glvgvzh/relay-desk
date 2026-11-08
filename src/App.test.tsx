@@ -59,6 +59,52 @@ describe('Relay Desk', () => {
     expect(screen.getByText('Всего: 2')).toBeInTheDocument()
   })
 
+  it('при клике на строку сотрудника из раздела "Команда" переводит в раздел активных заявок с установленным фильтром по исполнителю', async () => {
+    const user = userEvent.setup()
+    renderRoute('/team')
+
+    expect(
+      await screen.findByText('Доступность специалистов, текущая нагрузка и распределение ответственности.'),
+    ).toBeInTheDocument()
+    const text = await screen.findByText(/Анна Ким/)
+    const userRow = text.closest('tr')
+    if (!userRow) throw new Error('Элемент не найден')
+    await user.click(userRow)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+      expect(screen.getByRole('combobox', { name: 'Исполнитель' })).toHaveValue('agent-1')
+    })
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Новому сотруднику нужны инструменты дизайна/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-139',
+    )
+    expect(within(table).getByRole('link', { name: /Изменить фамилию в корпоративных системах/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-112',
+    )
+    expect(screen.getByText('Всего: 2')).toBeInTheDocument()
+  })
+
+  it('фильтр по конкретному сотруднику восстанавливается при прямом открытии ссылки', async () => {
+    renderRoute('/tickets?assignee=agent-1')
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+      expect(screen.getByRole('combobox', { name: 'Исполнитель' })).toHaveValue('agent-1')
+    })
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Новому сотруднику нужны инструменты дизайна/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-139',
+    )
+    expect(within(table).getByRole('link', { name: /Изменить фамилию в корпоративных системах/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-112',
+    )
+    expect(screen.getByText('Всего: 2')).toBeInTheDocument()
+  })
+
   it('фильтрует очередь заявок по поисковому запросу', async () => {
     const user = userEvent.setup()
     renderRoute('/tickets')

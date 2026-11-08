@@ -3,8 +3,11 @@ import { ErrorState, LoadingState } from '../components/PageState'
 import { PageHeader } from '../components/PageHeader'
 import { agentStatusLabels } from '../domain/labels'
 import { useAsyncData } from '../hooks/useAsyncData'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 export function TeamPage() {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const result = useAsyncData((signal) => relayDeskApi.getTeam(signal), 'team')
   if (result.status === 'loading') return <LoadingState label="Загружаем команду" />
@@ -90,15 +93,23 @@ export function TeamPage() {
               {visibleAgents.map((agent) => {
                 const percent = Math.round((agent.activeTickets / agent.capacity) * 100)
                 return (
-                  <tr key={agent.id}>
+                  <tr
+                    key={agent.id}
+                    onClick={() => {
+                      navigate(`/tickets?assignee=${agent.id}`)
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <th scope="row">
-                      <span className="assignee">
-                        <span className="avatar">{agent.avatar}</span>
-                        <span>
-                          <strong>{agent.name}</strong>
-                          <small>{agent.email}</small>
+                      <Link to={`/tickets?assignee=${agent.id}`} onClick={(e) => e.stopPropagation()}>
+                        <span className="assignee">
+                          <span className="avatar">{agent.avatar}</span>
+                          <span>
+                            <strong>{agent.name}</strong>
+                            <small>{agent.email}</small>
+                          </span>
                         </span>
-                      </span>
+                      </Link>
                     </th>
                     <td>
                       <span className={`agent-status agent-status-${agent.status}`}>
@@ -155,5 +166,3 @@ export function TeamPage() {
     </>
   )
 }
-
-import { useState } from 'react'
