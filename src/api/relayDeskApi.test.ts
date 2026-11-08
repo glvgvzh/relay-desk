@@ -25,6 +25,13 @@ describe('relayDeskApi', () => {
     expect(result.tickets[0].id).toBe('RD-142')
     expect(result.tickets[1].id).toBe('RD-117')
   })
+  it('фильтрует заявки по конкретным исполнителям и возвращает только активные заявки', async () => {
+    const result = await relayDeskApi.getTickets({ assignee: 'agent-1' })
+
+    expect(result.tickets).toHaveLength(2)
+    expect(result.tickets[0].id).toBe('RD-139')
+    expect(result.tickets[1].id).toBe('RD-112')
+  })
 
   it('при сброшенном фильтре по исполнителю решенные заявки отображаются', async () => {
     localStorage.setItem(

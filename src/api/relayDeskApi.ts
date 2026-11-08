@@ -189,7 +189,8 @@ export const relayDeskApi = {
             (!filters.sla || filters.sla === 'all' || isOverdue(ticket)) &&
             (!filters.assignee ||
               filters.assignee === 'all' ||
-              (ticket.assigneeId === null && ticket.status !== 'resolved'))
+              (filters.assignee === 'unassigned' && ticket.assigneeId === null && ticket.status !== 'resolved') ||
+              (ticket.assigneeId === filters.assignee && ticket.status !== 'resolved'))
           )
         })
         const sort = filters.sort ?? 'updated_desc'

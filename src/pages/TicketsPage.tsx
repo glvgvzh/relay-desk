@@ -16,7 +16,7 @@ export function TicketsPage() {
   const priority = (searchParams.get('priority') ?? 'all') as TicketPriority | 'all'
   const sort = (searchParams.get('sort') ?? 'updated_desc') as TicketSort
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
-  const assignee = (searchParams.get('assignee') ?? 'all') as 'all' | 'unassigned'
+  const assignee = searchParams.get('assignee') ?? 'all'
 
   const [prevQuery, setPrevQuery] = useState(query)
   if (query !== prevQuery) {
@@ -130,6 +130,11 @@ export function TicketsPage() {
               <select value={assignee} onChange={(event) => updateFilter('assignee', event.target.value)}>
                 <option value="all">Любой исполнитель</option>
                 <option value="unassigned">Только без исполнителя</option>
+                {result.data?.agents.map((agent) => (
+                  <option value={agent.id} key={agent.id}>
+                    {agent.name}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
