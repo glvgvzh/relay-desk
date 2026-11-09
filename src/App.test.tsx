@@ -323,6 +323,48 @@ describe('Relay Desk', () => {
     expect(screen.getByText(/выйдите из корпоративного портала/i)).toBeInTheDocument()
   })
 
+  it('раздел Базы знаний устанавливает фильтры из URL', async () => {
+    const query = 'восстановить'
+    const category = 'Учётные записи'
+    renderRoute(`/knowledge?q=${query}&c=${category}`)
+
+    expect(await screen.findByRole('searchbox', { name: 'Поиск статей' })).toHaveValue(query)
+    expect(screen.getByRole('button', { name: category })).toHaveClass('category-active')
+    expect(screen.getByText('Как восстановить доступ после смены пароля')).toBeInTheDocument()
+  })
+
+  it('при изменении одного из фильтров в базе знаний второй фильтр не затрагивается', async () => {
+    const user = userEvent.setup()
+    const query = 'восстановить'
+    const category = 'Учётные записи'
+    renderRoute(`/knowledge?q=${query}&c=${category}`)
+
+    expect(await screen.findByRole('searchbox', { name: 'Поиск статей' })).toHaveValue(query)
+    await user.click(screen.getByRole('button', { name: 'Рабочее место' }))
+    expect(screen.getByRole('button', { name: category })).not.toHaveClass('category-active')
+    expect(screen.getByRole('button', { name: 'Рабочее место' })).toHaveClass('category-active')
+    expect(screen.getByRole('searchbox', { name: 'Поиск статей' })).toHaveValue(query)
+    expect(screen.getByText('Статьи не найдены. Измените запрос или категорию.')).toBeInTheDocument()
+    await user.clear(screen.getByRole('searchbox', { name: 'Поиск статей' }))
+    expect(screen.getByText('Подключение второго монитора')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Рабочее место' })).toHaveClass('category-active')
+  })
+
+  it('при сбросе всех фильтров в разделе базы знаний все статьи восстанавливаются', async () => {
+    const user = userEvent.setup()
+    const query = 'восстановить'
+    const category = 'Учётные записи'
+    renderRoute(`/knowledge?q=${query}&c=${category}`)
+
+    expect(await screen.findByRole('searchbox', { name: 'Поиск статей' })).toHaveValue(query)
+    await user.click(screen.getByRole('button', { name: /Все статьи/ }))
+    await user.clear(screen.getByRole('searchbox', { name: 'Поиск статей' }))
+    const section = document.querySelector('.article-list')
+    if (!section) throw new Error('Не удалось найти элемент')
+    const articleList = section.querySelectorAll('.article-category')
+    expect(articleList).toHaveLength(6)
+  })
+
   it('сохраняет внутреннюю заметку отдельно от публичного ответа', async () => {
     const user = userEvent.setup()
     renderRoute('/tickets/RD-142')
