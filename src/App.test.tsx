@@ -1,16 +1,15 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './App'
+import { routes } from './routes'
 import { relayDeskApi } from './api/relayDeskApi'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 
 function renderRoute(route: string) {
-  return render(
-    <MemoryRouter initialEntries={[route]}>
-      <App />
-    </MemoryRouter>,
-  )
+  const router = createMemoryRouter(routes, {
+    initialEntries: [route],
+  })
+  return render(<RouterProvider router={router} />)
 }
 
 describe('Relay Desk', () => {
@@ -255,6 +254,71 @@ describe('Relay Desk', () => {
     expect(screen.getByRole('heading', { name: /переписка/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /свойства/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /marina\.li/i })).toBeInTheDocument()
+  })
+
+  it('несохраненный черновик в деталях заявки блокирует внутренний переход', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
+    await user.click(screen.getByText(/каталог услуг/i))
+    expect(screen.getByText(/у вас остались несохраненные изменения/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /нет доступа к порталу расходов/i })).toBeInTheDocument()
+  })
+
+  it('кнопка "Остаться" сохраняет состояние несохраненного черновика', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.click(screen.getByRole('button', { name: /добавить внутреннюю заметку/i }))
+    await user.type(screen.getByRole('textbox', { name: /внутренняя заметка/i }), 'test')
+    await user.click(screen.getByText(/каталог услуг/i))
+    await user.click(screen.getByRole('button', { name: 'Остаться' }))
+    expect(screen.getByRole('textbox', { name: /внутренняя заметка/i })).toHaveValue('test')
+    expect(screen.getByRole('button', { name: /сохранить заметку/i })).toBeInTheDocument()
+  })
+
+  it('кнопка "Уйти" продолжает переход', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
+    await user.click(screen.getByText(/каталог услуг/i))
+    await user.click(await screen.findByRole('button', { name: 'Уйти' }))
+    expect(await screen.findByText(/популярные услуги/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /нет доступа к порталу расходов/i })).not.toBeInTheDocument()
+  })
+
+  it('пустое или пробельное поле не блокирует переход', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), '   ')
+    await user.click(screen.getByText(/каталог услуг/i))
+    expect(screen.queryByText(/у вас остались несохраненные изменения/i)).not.toBeInTheDocument()
+    expect(await screen.findByText(/популярные услуги/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /нет доступа к порталу расходов/i })).not.toBeInTheDocument()
+  })
+
+  it('после успешной отправки переход не блокируется', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
+    await user.click(screen.getByRole('button', { name: /отправить ответ/i }))
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: /ответ сотруднику/i })).toHaveValue('')
+    })
+    expect(await screen.findByText('test')).toBeInTheDocument()
+    await user.click(screen.getByText(/каталог услуг/i))
+    expect(screen.queryByText(/у вас остались несохраненные изменения/i)).not.toBeInTheDocument()
+    expect(await screen.findByText(/популярные услуги/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /нет доступа к порталу расходов/i })).not.toBeInTheDocument()
   })
 
   it('показывает страницу для неизвестного маршрута', () => {
