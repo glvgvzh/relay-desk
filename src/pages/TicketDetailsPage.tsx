@@ -1,5 +1,5 @@
-import { useRef, useState, type FormEvent } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useBlocker, useLocation, useParams, type BlockerFunction } from 'react-router-dom'
 import { relayDeskApi } from '../api/relayDeskApi'
 import { ErrorState, LoadingState } from '../components/PageState'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
@@ -68,6 +68,20 @@ export function TicketDetailsPage() {
     }
   }
 
+  const hasUnsavedDraft = Boolean(reply.trim())
+  const shouldBlock: BlockerFunction = ({ currentLocation, nextLocation }) => {
+    return currentLocation.pathname !== nextLocation.pathname && hasUnsavedDraft
+  }
+  const blocker = useBlocker(shouldBlock)
+  useEffect(() => {
+    function handleReload(event: BeforeUnloadEvent) {
+      if (!hasUnsavedDraft) return
+      event.preventDefault()
+    }
+    window.addEventListener('beforeunload', handleReload)
+    return () => window.removeEventListener('beforeunload', handleReload)
+  }, [hasUnsavedDraft])
+
   if (result.status === 'loading') return <LoadingState label="Открываем заявку" />
   if (result.status === 'error') return <ErrorState onRetry={result.retry} />
   if (!result.data) return <TicketNotFound />
@@ -94,6 +108,21 @@ export function TicketDetailsPage() {
 
   return (
     <>
+      {blocker.state === 'blocked' && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>У вас остались несохраненные изменения. Покинуть страницу?</h2>
+            <div className="modal-actions">
+              <button className="primary-button" onClick={blocker.reset}>
+                Остаться
+              </button>
+              <button className="secondary-button" onClick={blocker.proceed}>
+                Уйти
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="breadcrumbs">
         <Link to="/tickets">Заявки</Link>
         <span>/</span>
