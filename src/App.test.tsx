@@ -263,7 +263,7 @@ describe('Relay Desk', () => {
     await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
     await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
     await user.click(screen.getByText(/каталог услуг/i))
-    expect(screen.getByText(/у вас остались несохраненные изменения/i)).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /у вас остались несохраненные изменения/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /нет доступа к порталу расходов/i })).toBeInTheDocument()
   })
 
@@ -299,7 +299,7 @@ describe('Relay Desk', () => {
     await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
     await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), '   ')
     await user.click(screen.getByText(/каталог услуг/i))
-    expect(screen.queryByText(/у вас остались несохраненные изменения/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /у вас остались несохраненные изменения/i })).not.toBeInTheDocument()
     expect(await screen.findByText(/популярные услуги/i)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /нет доступа к порталу расходов/i })).not.toBeInTheDocument()
   })
@@ -316,9 +316,33 @@ describe('Relay Desk', () => {
     })
     expect(await screen.findByText('test')).toBeInTheDocument()
     await user.click(screen.getByText(/каталог услуг/i))
-    expect(screen.queryByText(/у вас остались несохраненные изменения/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: /у вас остались несохраненные изменения/i })).not.toBeInTheDocument()
     expect(await screen.findByText(/популярные услуги/i)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: /нет доступа к порталу расходов/i })).not.toBeInTheDocument()
+  })
+
+  it('при открытии предупреждения фокус оказывается внутри него', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
+    await user.click(screen.getByText(/каталог услуг/i))
+    expect(screen.getByRole('dialog', { name: /у вас остались несохраненные изменения/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /нет доступа к порталу расходов/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /остаться/i })).toHaveFocus()
+  })
+
+  it('после выбора «Остаться» фокус возвращается в понятное место и черновик сохраняется', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets/RD-142')
+
+    await screen.findByRole('heading', { name: /нет доступа к порталу расходов/i })
+    await user.type(screen.getByRole('textbox', { name: /ответ сотруднику/i }), 'test')
+    await user.click(screen.getByText(/каталог услуг/i))
+    await user.click(screen.getByRole('button', { name: /остаться/i }))
+    expect(screen.getByRole('textbox', { name: /ответ сотруднику/i })).toHaveFocus()
+    expect(screen.getByRole('textbox', { name: /ответ сотруднику/i })).toHaveValue('test')
   })
 
   it('показывает страницу для неизвестного маршрута', () => {

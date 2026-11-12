@@ -68,11 +68,14 @@ export function TicketDetailsPage() {
     }
   }
 
+  const modalRef = useRef<HTMLDialogElement>(null)
+
   const hasUnsavedDraft = Boolean(reply.trim())
   const shouldBlock: BlockerFunction = ({ currentLocation, nextLocation }) => {
     return currentLocation.pathname !== nextLocation.pathname && hasUnsavedDraft
   }
   const blocker = useBlocker(shouldBlock)
+
   useEffect(() => {
     function handleReload(event: BeforeUnloadEvent) {
       if (!hasUnsavedDraft) return
@@ -81,6 +84,13 @@ export function TicketDetailsPage() {
     window.addEventListener('beforeunload', handleReload)
     return () => window.removeEventListener('beforeunload', handleReload)
   }, [hasUnsavedDraft])
+
+  useEffect(() => {
+    const modal = modalRef.current
+    if (blocker.state === 'blocked' && modal && !modal.open) {
+      modal.showModal()
+    }
+  }, [blocker.state])
 
   if (result.status === 'loading') return <LoadingState label="Открываем заявку" />
   if (result.status === 'error') return <ErrorState onRetry={result.retry} />
@@ -108,21 +118,42 @@ export function TicketDetailsPage() {
 
   return (
     <>
-      {blocker.state === 'blocked' && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>У вас остались несохраненные изменения. Покинуть страницу?</h2>
-            <div className="modal-actions">
-              <button className="primary-button" onClick={blocker.reset}>
-                Остаться
-              </button>
-              <button className="secondary-button" onClick={blocker.proceed}>
-                Уйти
-              </button>
-            </div>
-          </div>
+      <dialog
+        className="modal"
+        id="modal"
+        aria-modal="true"
+        aria-labelledby="unsaved-changes"
+        ref={modalRef}
+        onCancel={(e) => {
+          e.preventDefault()
+          blocker.reset!()
+          modalRef.current?.close()
+          replyRef.current?.focus()
+        }}
+      >
+        <h2 id="unsaved-changes">У вас остались несохраненные изменения. Покинуть страницу?</h2>
+        <div className="modal-actions">
+          <button
+            className="primary-button"
+            onClick={() => {
+              blocker.reset!()
+              modalRef.current?.close()
+              replyRef.current?.focus()
+            }}
+          >
+            Остаться
+          </button>
+          <button
+            className="secondary-button"
+            onClick={() => {
+              blocker.proceed!()
+              modalRef.current?.close()
+            }}
+          >
+            Уйти
+          </button>
         </div>
-      )}
+      </dialog>
       <div className="breadcrumbs">
         <Link to="/tickets">Заявки</Link>
         <span>/</span>
