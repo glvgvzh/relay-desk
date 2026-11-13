@@ -16,6 +16,58 @@ describe('Relay Desk', () => {
   beforeEach(() => relayDeskApi.resetForTests())
   afterEach(() => vi.restoreAllMocks())
 
+  it('сочетание клавиш Cmd + F на macOS переводит фокус на глобальный поиск', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel')
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    const search = screen.getByRole('searchbox', { name: /поиск по продукту/i })
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Meta>}f{/Meta}')
+    expect(search).toHaveFocus()
+  })
+
+  it('сочетание клавиш Cmd + F в совокупности с Shift, Alt или Control на macOS не переводит фокус на глобальный поиск', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel')
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    const search = screen.getByRole('searchbox', { name: /поиск по продукту/i })
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Meta>}{Shift>}f{/Shift}{/Meta}')
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Meta>}{Alt>}f{/Alt}{/Meta}')
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Meta>}{Control>}f{/Control}{/Meta}')
+    expect(search).not.toHaveFocus()
+  })
+
+  it('сочетание клавиш Ctrl + F на Windows переводит фокус на глобальный поиск', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Win32')
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    const search = screen.getByRole('searchbox', { name: /поиск по продукту/i })
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Control>}f{/Control}')
+    expect(search).toHaveFocus()
+  })
+
+  it('сочетание клавиш Ctrl + F в совокупности с Shift, Alt или Meta на Windows не переводит фокус на глобальный поиск', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Win32')
+    const user = userEvent.setup()
+    renderRoute('/dashboard')
+
+    const search = screen.getByRole('searchbox', { name: /поиск по продукту/i })
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Control>}{Shift>}f{/Shift}{/Control}')
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Control>}{Alt>}f{/Alt}{/Control}')
+    expect(search).not.toHaveFocus()
+    await user.keyboard('{Control>}{Meta>}f{/Meta}{/Control}')
+    expect(search).not.toHaveFocus()
+  })
+
   it('показывает продуктовую сводку', async () => {
     renderRoute('/dashboard')
 
