@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { relayDeskApi } from '../api/relayDeskApi'
 import { useAsyncData } from '../hooks/useAsyncData'
@@ -41,13 +41,32 @@ function NavigationGroup({ label, items }: { label: string; items: NavigationIte
 export function AppShell() {
   const navigate = useNavigate()
   const [revision, setRevision] = useState(0)
+  const [isFocused, setIsFocused] = useState(false)
   const shell = useAsyncData((signal) => relayDeskApi.getShell(signal), `shell:${revision}`)
+  const isMac = navigator.platform.startsWith('Mac') || navigator.platform === 'iPhone'
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1)
     window.addEventListener('relaydesk:datachange', refresh)
     return () => window.removeEventListener('relaydesk:datachange', refresh)
   }, [])
+
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if (
+        event.key.toLowerCase() === 'f' &&
+        !event.shiftKey &&
+        !event.altKey &&
+        ((isMac && event.metaKey && !event.ctrlKey) || (!isMac && event.ctrlKey && !event.metaKey))
+      ) {
+        event.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [isMac])
 
   const shellData = shell.status === 'success' ? shell.data : null
   const workspaceItems: NavigationItem[] = navigation.map((item) =>
@@ -102,7 +121,13 @@ export function AppShell() {
               name="query"
               type="search"
               placeholder="Поиск заявок по номеру, теме или автору"
+              ref={inputRef}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
             />
+            <span className="shortcut" aria-hidden="true" hidden={isFocused}>
+              {isMac ? '⌘' : 'Ctrl'} + F
+            </span>
           </form>
           <div className="topbar-actions">
             <Link className="secondary-button" to="/tickets/new">

@@ -294,6 +294,14 @@ h3 {
   margin-right: 8px;
   font-size: 1.15rem;
 }
+.shortcut {
+  color: var(--muted);
+  background: var(--accent-soft);
+  padding: 8px;
+  border-radius: 9px;
+  font-size: small;
+  margin-right: -8px;
+}
 .topbar-actions,
 .page-actions {
   display: flex;
