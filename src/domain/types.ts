@@ -113,6 +113,7 @@ export type TicketFilters = {
   sort?: TicketSort
   sla?: 'all' | 'overdue'
   assignee?: 'all' | 'unassigned' | Ticket['assigneeId']
+  organization?: Organization['id'] | 'all'
 }
 
 export type CreateTicketInput = {
