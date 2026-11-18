@@ -190,7 +190,10 @@ export const relayDeskApi = {
             (!filters.assignee ||
               filters.assignee === 'all' ||
               (filters.assignee === 'unassigned' && ticket.assigneeId === null && ticket.status !== 'resolved') ||
-              (ticket.assigneeId === filters.assignee && ticket.status !== 'resolved'))
+              (ticket.assigneeId === filters.assignee && ticket.status !== 'resolved')) &&
+            (!filters.organization ||
+              filters.organization === 'all' ||
+              filters.organization === ticket.requester.organizationId)
           )
         })
         const sort = filters.sort ?? 'updated_desc'
@@ -201,7 +204,7 @@ export const relayDeskApi = {
               ? priorityWeight[b.priority] - priorityWeight[a.priority] || b.updatedAt.localeCompare(a.updatedAt)
               : b.updatedAt.localeCompare(a.updatedAt),
         )
-        return { tickets: result, queues, agents: agentsWithLoad(), total: result.length }
+        return { tickets: result, queues, agents: agentsWithLoad(), total: result.length, organizations }
       },
       signal,
     )

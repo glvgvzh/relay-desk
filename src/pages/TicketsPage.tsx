@@ -17,6 +17,7 @@ export function TicketsPage() {
   const sort = (searchParams.get('sort') ?? 'updated_desc') as TicketSort
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
   const assignee = searchParams.get('assignee') ?? 'all'
+  const organization = searchParams.get('organization') ?? 'all'
 
   const [prevQuery, setPrevQuery] = useState(query)
   if (query !== prevQuery) {
@@ -25,8 +26,9 @@ export function TicketsPage() {
   }
 
   const result = useAsyncData(
-    (signal) => relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla, assignee }, signal),
-    `tickets:${query}:${status}:${queueId}:${priority}:${sort}:${sla}:${assignee}`,
+    (signal) =>
+      relayDeskApi.getTickets({ query, status, queueId, priority, sort, sla, assignee, organization }, signal),
+    `tickets:${query}:${status}:${queueId}:${priority}:${sort}:${sla}:${assignee}:${organization}`,
   )
 
   function updateFilter(name: string, value: string) {
@@ -133,6 +135,17 @@ export function TicketsPage() {
                 {result.data?.agents.map((agent) => (
                   <option value={agent.id} key={agent.id}>
                     {agent.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Организация</span>
+              <select value={organization} onChange={(event) => updateFilter('organization', event.target.value)}>
+                <option value="all">Любая организация</option>
+                {result.data?.organizations.map((organization) => (
+                  <option value={organization.id} key={organization.id}>
+                    {organization.name}
                   </option>
                 ))}
               </select>

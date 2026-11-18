@@ -186,6 +186,83 @@ describe('Relay Desk', () => {
     expect(innerSearch).toHaveValue('new test')
   })
 
+  it('показывает выбранную организацию и соответствующие заявки', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets')
+
+    expect(screen.getByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+    await screen.findByRole('option', { name: 'Терра Банк' })
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Организация' }), 'terra')
+
+    await waitFor(() => {
+      expect(screen.getByRole('combobox', { name: 'Организация' })).toHaveValue('terra')
+    })
+
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Обновить контактные данные для счетов/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-137',
+    )
+    expect(within(table).getByRole('link', { name: /Выгрузка отчёта завершается ошибкой/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-128',
+    )
+    expect(within(table).getByRole('link', { name: /Добавить участника в бюджетный центр/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-119',
+    )
+    expect(screen.getByText('Всего: 3')).toBeInTheDocument()
+  })
+
+  it('фильтр по организации восстанавливается при прямом открытии ссылки', async () => {
+    renderRoute('/tickets?organization=terra')
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+      expect(screen.getByRole('combobox', { name: 'Организация' })).toHaveValue('terra')
+    })
+    const table = await screen.findByRole('table')
+    expect(within(table).getByRole('link', { name: /Обновить контактные данные для счетов/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-137',
+    )
+    expect(within(table).getByRole('link', { name: /Выгрузка отчёта завершается ошибкой/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-128',
+    )
+    expect(within(table).getByRole('link', { name: /Добавить участника в бюджетный центр/i })).toHaveAttribute(
+      'href',
+      '/tickets/RD-119',
+    )
+    expect(screen.getByText('Всего: 3')).toBeInTheDocument()
+  })
+
+  it('фильтр организации совместим с остальными фильтрами и сортировкой', async () => {
+    const user = userEvent.setup()
+    renderRoute('/tickets')
+
+    expect(screen.getByPlaceholderText(/номер, тема или автор/i)).toBeInTheDocument()
+    await screen.findByRole('option', { name: 'Терра Банк' })
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Организация' }), 'terra')
+    expect(within(await screen.findByRole('table')).getAllByRole('link')).toHaveLength(3)
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Очередь' }), 'finance')
+
+    await waitFor(() => {
+      const ticketsWithoutSort = within(screen.getByRole('table')).getAllByRole('link')
+      expect(ticketsWithoutSort).toHaveLength(2)
+      expect(ticketsWithoutSort[0]).toHaveAccessibleName('Обновить контактные данные для счетов')
+      expect(ticketsWithoutSort[1]).toHaveAccessibleName('Добавить участника в бюджетный центр')
+    })
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Сортировка' }), 'priority_desc')
+
+    await waitFor(() => {
+      const ticketsWithSort = within(screen.getByRole('table')).getAllByRole('link')
+      expect(ticketsWithSort[0]).toHaveAccessibleName('Добавить участника в бюджетный центр')
+      expect(ticketsWithSort[1]).toHaveAccessibleName('Обновить контактные данные для счетов')
+    })
+  })
+
   it('кнопка "Сбросить фильтры" устанавливает фокус при управлении с клавиатуры и сбрасывает фильтры при нажатии', async () => {
     const user = userEvent.setup()
     renderRoute('/tickets')
@@ -206,12 +283,15 @@ describe('Relay Desk', () => {
     await user.selectOptions(sla, 'overdue')
     const assignee = screen.getByRole('combobox', { name: 'Исполнитель' })
     await user.selectOptions(assignee, 'unassigned')
+    const organization = screen.getByRole('combobox', { name: 'Организация' })
+    await screen.findByRole('option', { name: 'Northstar' })
+    await user.selectOptions(organization, 'northstar')
 
     expect(await screen.findByText(/Измените условия поиска или/)).toBeInTheDocument()
     const resetFiltersButton = screen.getByRole('button', { name: 'сбросьте фильтры' })
     expect(resetFiltersButton).toBeInTheDocument()
 
-    assignee.focus()
+    organization.focus()
     await user.tab()
     expect(resetFiltersButton).toHaveFocus()
     await user.keyboard('{Enter}')
@@ -223,6 +303,8 @@ describe('Relay Desk', () => {
     expect(priority).toHaveValue('all')
     expect(sort).toHaveValue('updated_desc')
     expect(sla).toHaveValue('all')
+    expect(assignee).toHaveValue('all')
+    expect(organization).toHaveValue('all')
     expect(await screen.findByText('Всего: 10')).toBeInTheDocument()
   })
 
