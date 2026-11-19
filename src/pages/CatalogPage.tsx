@@ -17,6 +17,8 @@ export function CatalogPage() {
       !normalizedQuery ||
       `${service.title} ${service.description} ${service.category}`.toLocaleLowerCase('ru').includes(normalizedQuery),
   )
+  const popularServices = services.filter((service) => service.popular)
+  const otherServices = services.filter((service) => !service.popular)
 
   return (
     <>
@@ -42,37 +44,37 @@ export function CatalogPage() {
         </p>
       )}
 
-      <section aria-labelledby="popular-heading">
-        <div className="section-heading">
-          <div>
-            <h2 id="popular-heading">Популярные услуги</h2>
-            <p>Чаще всего заказывают сотрудники</p>
+      {popularServices.length !== 0 && (
+        <section aria-labelledby="popular-heading">
+          <div className="section-heading">
+            <div>
+              <h2 id="popular-heading">Популярные услуги</h2>
+              <p>Чаще всего заказывают сотрудники</p>
+            </div>
           </div>
-        </div>
-        <div className="catalog-grid">
-          {services
-            .filter((service) => service.popular)
-            .map((service) => (
+          <div className="catalog-grid">
+            {popularServices.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
-      <section aria-labelledby="all-services-heading">
-        <div className="section-heading">
-          <div>
-            <h2 id="all-services-heading">Все услуги</h2>
-            <p>По категориям поддержки</p>
+      {otherServices.length !== 0 && (
+        <section aria-labelledby="all-services-heading">
+          <div className="section-heading">
+            <div>
+              <h2 id="all-services-heading">Все услуги</h2>
+              <p>По категориям поддержки</p>
+            </div>
           </div>
-        </div>
-        <div className="catalog-grid catalog-grid-compact">
-          {services
-            .filter((service) => !service.popular)
-            .map((service) => (
+          <div className="catalog-grid catalog-grid-compact">
+            {otherServices.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </>
   )
 }
