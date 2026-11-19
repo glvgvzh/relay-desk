@@ -16,6 +16,36 @@ describe('Relay Desk', () => {
   beforeEach(() => relayDeskApi.resetForTests())
   afterEach(() => vi.restoreAllMocks())
 
+  it('поиск услуг в каталоге не показывает пустые разделы', async () => {
+    const user = userEvent.setup()
+    renderRoute('/catalog')
+
+    await screen.findByRole('region', { name: /Популярные услуги/i })
+    const searchInput = screen.getByPlaceholderText(/Что вам нужно?/i)
+    await user.type(searchInput, 'выход')
+    expect(screen.getByRole('region', { name: /Популярные услуги/i })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /Все услуги/i })).not.toBeInTheDocument()
+
+    await user.clear(searchInput)
+
+    await user.type(searchInput, 'оформить')
+    expect(screen.queryByRole('region', { name: /Популярные услуги/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /Все услуги/i })).toBeInTheDocument()
+
+    await user.clear(searchInput)
+
+    await user.type(searchInput, 'qwerty')
+    expect(screen.queryByRole('region', { name: /Все услуги/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: /Популярные услуги/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/Услуги не найдены. Попробуйте изменить запрос./i)).toBeInTheDocument()
+
+    await user.clear(searchInput)
+
+    expect(screen.queryByText(/Услуги не найдены. Попробуйте изменить запрос./i)).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /Популярные услуги/i })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /Все услуги/i })).toBeInTheDocument()
+  })
+
   it('поиск специалистов отображает пустое состояние', async () => {
     const user = userEvent.setup()
     renderRoute('/team')
