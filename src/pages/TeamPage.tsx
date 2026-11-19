@@ -79,61 +79,68 @@ export function TeamPage() {
           </label>
         </div>
         <div className="table-wrap">
-          <table className="team-table">
-            <thead>
-              <tr>
-                <th scope="col">Сотрудник</th>
-                <th scope="col">Статус</th>
-                <th scope="col">Роль</th>
-                <th scope="col">Нагрузка</th>
-                <th scope="col">Активные заявки</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleAgents.map((agent) => {
-                const percent = Math.round((agent.activeTickets / agent.capacity) * 100)
-                return (
-                  <tr
-                    key={agent.id}
-                    onClick={() => {
-                      navigate(`/tickets?assignee=${agent.id}`)
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <th scope="row">
-                      <Link to={`/tickets?assignee=${agent.id}`} onClick={(e) => e.stopPropagation()}>
-                        <span className="assignee">
-                          <span className="avatar">{agent.avatar}</span>
-                          <span>
-                            <strong>{agent.name}</strong>
-                            <small>{agent.email}</small>
+          {visibleAgents.length === 0 && (
+            <p className="panel inline-empty" role="status">
+              Специалисты не найдены. Измените поисковый запрос
+            </p>
+          )}
+          {visibleAgents.length !== 0 && (
+            <table className="team-table">
+              <thead>
+                <tr>
+                  <th scope="col">Сотрудник</th>
+                  <th scope="col">Статус</th>
+                  <th scope="col">Роль</th>
+                  <th scope="col">Нагрузка</th>
+                  <th scope="col">Активные заявки</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleAgents.map((agent) => {
+                  const percent = Math.round((agent.activeTickets / agent.capacity) * 100)
+                  return (
+                    <tr
+                      key={agent.id}
+                      onClick={() => {
+                        navigate(`/tickets?assignee=${agent.id}`)
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <th scope="row">
+                        <Link to={`/tickets?assignee=${agent.id}`} onClick={(e) => e.stopPropagation()}>
+                          <span className="assignee">
+                            <span className="avatar">{agent.avatar}</span>
+                            <span>
+                              <strong>{agent.name}</strong>
+                              <small>{agent.email}</small>
+                            </span>
                           </span>
+                        </Link>
+                      </th>
+                      <td>
+                        <span className={`agent-status agent-status-${agent.status}`}>
+                          <i />
+                          {agentStatusLabels[agent.status]}
                         </span>
-                      </Link>
-                    </th>
-                    <td>
-                      <span className={`agent-status agent-status-${agent.status}`}>
-                        <i />
-                        {agentStatusLabels[agent.status]}
-                      </span>
-                    </td>
-                    <td>{agent.role}</td>
-                    <td>
-                      <div className="workload">
-                        <div>
-                          <span style={{ width: `${percent}%` }} />
+                      </td>
+                      <td>{agent.role}</td>
+                      <td>
+                        <div className="workload">
+                          <div>
+                            <span style={{ width: `${percent}%` }} />
+                          </div>
+                          <small>{percent}%</small>
                         </div>
-                        <small>{percent}%</small>
-                      </div>
-                    </td>
-                    <td>
-                      <strong>{agent.activeTickets}</strong> из {agent.capacity}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>
+                        <strong>{agent.activeTickets}</strong> из {agent.capacity}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
       <section className="panel responsibility-panel" aria-labelledby="responsibility-heading">
