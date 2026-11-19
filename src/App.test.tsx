@@ -16,6 +16,23 @@ describe('Relay Desk', () => {
   beforeEach(() => relayDeskApi.resetForTests())
   afterEach(() => vi.restoreAllMocks())
 
+  it('поиск специалистов отображает пустое состояние', async () => {
+    const user = userEvent.setup()
+    renderRoute('/team')
+
+    await screen.findByText(/Данные обновлены несколько секунд назад/i)
+    const table = screen.getByRole('table')
+    const links = within(table).getAllByRole('link')
+    expect(links).toHaveLength(5)
+    const input = screen.getByPlaceholderText(/Найти специалиста/i)
+    await user.type(input, 'qwerty')
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByText(/Специалисты не найдены. Измените поисковый запрос/i)).toBeInTheDocument()
+    await user.clear(input)
+    expect(screen.queryByText(/Специалисты не найдены. Измените поисковый запрос/i)).not.toBeInTheDocument()
+    expect(within(screen.getByRole('table')).getAllByRole('link')).toHaveLength(5)
+  })
+
   it('сочетание клавиш Cmd + F на macOS переводит фокус на глобальный поиск', async () => {
     vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel')
     const user = userEvent.setup()
