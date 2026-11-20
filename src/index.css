@@ -1155,12 +1155,22 @@ tbody th small,
   gap: 10px;
   max-width: 760px;
   min-height: 52px;
-  margin: -5px 0 34px;
   padding: 0 17px;
   border: 1px solid var(--line);
   border-radius: 11px;
   background: #fff;
   box-shadow: 0 6px 18px rgb(25 55 47 / 4%);
+}
+.catalog-search,
+.knowledge-search-wrap {
+  margin: -5px 0 34px;
+}
+.knowledge-search-wrap {
+  display: flex;
+  gap: 10px;
+}
+.knowledge-search {
+  flex: 1;
 }
 .catalog-search input,
 .knowledge-search input {

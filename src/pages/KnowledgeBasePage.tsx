@@ -36,16 +36,31 @@ export function KnowledgeBasePage() {
         title="База знаний"
         description="Инструкции и ответы на частые вопросы о корпоративных сервисах."
       />
-      <label className="knowledge-search">
-        <span aria-hidden="true">⌕</span>
-        <span className="sr-only">Поиск статей</span>
-        <input
-          value={query}
-          onChange={(event) => updateFilter('q', event.target.value)}
-          type="search"
-          placeholder="Поиск по заголовкам и содержанию"
-        />
-      </label>
+      <div className="knowledge-search-wrap">
+        <label className="knowledge-search">
+          <span aria-hidden="true">⌕</span>
+          <span className="sr-only">Поиск статей</span>
+          <input
+            value={query}
+            onChange={(event) => updateFilter('q', event.target.value)}
+            type="search"
+            placeholder="Поиск по заголовкам и содержанию"
+          />
+        </label>
+        {(query.trim() !== '' || category !== 'all') && (
+          <button
+            className="secondary-button"
+            onClick={() => {
+              const next = new URLSearchParams(searchParams)
+              next.delete('c')
+              next.delete('q')
+              setSearchParams(next)
+            }}
+          >
+            Сбросить фильтры
+          </button>
+        )}
+      </div>
       <div className="knowledge-layout">
         <aside className="category-list">
           <h2>Категории</h2>

@@ -16,6 +16,32 @@ describe('Relay Desk', () => {
   beforeEach(() => relayDeskApi.resetForTests())
   afterEach(() => vi.restoreAllMocks())
 
+  it('общий сброс фильтров в базе знаний работает с клавиатуры', async () => {
+    const user = userEvent.setup()
+    renderRoute('/knowledge')
+
+    await screen.findByText(/Рекомендуемые статьи/i)
+    expect(screen.queryByRole('button', { name: /Сбросить фильтры/i })).not.toBeInTheDocument()
+    const categoryButton = screen.getByRole('button', { name: /Безопасность/i })
+    const searchInput = screen.getByPlaceholderText(/Поиск по заголовкам и содержанию/i)
+    await user.click(categoryButton)
+    const resetButton = screen.getByRole('button', { name: /Сбросить фильтры/i })
+    expect(resetButton).toBeInTheDocument()
+    await user.type(searchInput, 'test')
+    expect(screen.getByText('Статьи не найдены. Измените запрос или категорию.')).toBeInTheDocument()
+    expect(categoryButton).toHaveClass('category-active')
+    expect(searchInput).toHaveValue('test')
+    searchInput.focus()
+    await user.tab()
+    expect(resetButton).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(searchInput).toHaveValue('')
+    expect(categoryButton).not.toHaveClass('category-active')
+    expect(screen.getByRole('button', { name: /Все статьи/i })).toHaveClass('category-active')
+    const articles = screen.getAllByRole('article')
+    expect(articles).toHaveLength(6)
+  })
+
   it('поиск услуг в каталоге не показывает пустые разделы', async () => {
     const user = userEvent.setup()
     renderRoute('/catalog')
