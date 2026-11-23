@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useBlocker, useNavigate, useSearchParams, type BlockerFunction } from 'react-router-dom'
 import { relayDeskApi } from '../api/relayDeskApi'
 import { ErrorState, LoadingState } from '../components/PageState'
 import { PageHeader } from '../components/PageHeader'
@@ -17,6 +17,32 @@ export function CreateTicketPage() {
   const [queueId, setQueueId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  const isTicketCreated = useRef(false)
+  const modalRef = useRef<HTMLDialogElement>(null)
+  const initialSnapshotRef = useRef<string>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
+  const shouldBlock: BlockerFunction = ({ currentLocation, nextLocation }) => {
+    return currentLocation.pathname !== nextLocation.pathname && hasUnsavedChanges && !isTicketCreated.current
+  }
+  const blocker = useBlocker(shouldBlock)
+
+  useEffect(() => {
+    function handleReload(event: BeforeUnloadEvent) {
+      if (!hasUnsavedChanges) return
+      event.preventDefault()
+    }
+    window.addEventListener('beforeunload', handleReload)
+    return () => window.removeEventListener('beforeunload', handleReload)
+  }, [hasUnsavedChanges])
+
+  useEffect(() => {
+    const modal = modalRef.current
+    if (blocker.state === 'blocked' && modal && !modal.open) {
+      modal?.showModal()
+    }
+  }, [blocker.state])
 
   if (formDataResult.status === 'loading') return <LoadingState label="Подготавливаем форму" />
   if (formDataResult.status === 'error')
@@ -45,6 +71,7 @@ export function CreateTicketPage() {
         priority: String(values.get('priority')) as TicketPriority,
         serviceId,
       })
+      isTicketCreated.current = true
       navigate(`/tickets/${ticket.id}`, { replace: true, state: { notice: 'Заявка создана и добавлена в очередь.' } })
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Не удалось создать заявку. Повторите попытку.')
@@ -54,6 +81,40 @@ export function CreateTicketPage() {
 
   return (
     <>
+      <dialog
+        className="modal"
+        id="modal"
+        aria-modal="true"
+        aria-labelledby="unsaved-changes"
+        ref={modalRef}
+        onCancel={(e) => {
+          e.preventDefault()
+          blocker.reset!()
+          modalRef.current?.close()
+        }}
+      >
+        <h2 id="unsaved-changes">У вас остались несохраненные изменения. Покинуть страницу?</h2>
+        <div className="modal-actions">
+          <button
+            className="primary-button"
+            onClick={() => {
+              blocker.reset!()
+              modalRef.current?.close()
+            }}
+          >
+            Остаться
+          </button>
+          <button
+            className="secondary-button"
+            onClick={() => {
+              blocker.proceed!()
+              modalRef.current?.close()
+            }}
+          >
+            Уйти
+          </button>
+        </div>
+      </dialog>
       <div className="breadcrumbs">
         <Link to={service ? '/catalog' : '/tickets'}>{service ? 'Каталог услуг' : 'Заявки'}</Link>
         <span>/</span>
@@ -64,7 +125,21 @@ export function CreateTicketPage() {
         title="Создать заявку"
         description="Опишите запрос и укажите автора. После создания заявка появится во всех связанных разделах."
       />
-      <form className="panel ticket-form" onSubmit={submit}>
+      <form
+        className="panel ticket-form"
+        onSubmit={submit}
+        ref={(form) => {
+          if (!form) return
+          const formData = new FormData(form)
+          if (!initialSnapshotRef.current) {
+            initialSnapshotRef.current = JSON.stringify([...formData.entries()])
+          }
+        }}
+        onChange={(event) => {
+          const formData = new FormData(event.currentTarget)
+          setHasUnsavedChanges(JSON.stringify([...formData.entries()]) !== initialSnapshotRef.current)
+        }}
+      >
         {service && (
           <section className="selected-service" aria-label="Выбранная услуга">
             <span className="service-icon" aria-hidden="true">
