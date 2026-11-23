@@ -618,6 +618,16 @@ describe('Relay Desk', () => {
     expect(screen.getByText(/выйдите из корпоративного портала/i)).toBeInTheDocument()
   })
 
+  it('поиск учитывает внутреннее содержимое статей базы знаний', async () => {
+    const user = userEvent.setup()
+    renderRoute('/knowledge')
+
+    await user.type(await screen.findByPlaceholderText('Поиск по заголовкам и содержанию'), 'подождите 15 минут')
+
+    expect(screen.getAllByRole('article')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: 'Как восстановить доступ после смены пароля' })).toBeInTheDocument()
+  })
+
   it('раздел Базы знаний устанавливает фильтры из URL', async () => {
     const query = 'восстановить'
     const category = 'Учётные записи'
