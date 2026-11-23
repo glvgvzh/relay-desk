@@ -17,8 +17,15 @@ export function KnowledgeBasePage() {
   const articles = result.data.filter((article) => {
     const matchesQuery =
       !normalizedQuery ||
-      `${article.title} ${article.summary} ${article.category}`.toLocaleLowerCase('ru').includes(normalizedQuery)
-    return matchesQuery && (category === 'all' || article.category === category)
+      `${article.title} ${article.summary} ${article.category} ${article.lead}`
+        .toLocaleLowerCase('ru')
+        .includes(normalizedQuery)
+    const matchesSections = article.sections.some(
+      (element) =>
+        element.body.toLocaleLowerCase('ru').includes(normalizedQuery) ||
+        element.heading.toLocaleLowerCase('ru').includes(normalizedQuery),
+    )
+    return (matchesQuery || matchesSections) && (category === 'all' || article.category === category)
   })
 
   function updateFilter(name: 'c' | 'q', value: string) {
