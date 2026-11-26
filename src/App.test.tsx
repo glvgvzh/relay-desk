@@ -72,6 +72,36 @@ describe('Relay Desk', () => {
     expect(screen.getByRole('region', { name: /Все услуги/i })).toBeInTheDocument()
   })
 
+  it('поиск специалистов и фильтрация по доступности работают совместно', async () => {
+    const user = userEvent.setup()
+    renderRoute('/team')
+
+    await screen.findByText(/Данные обновлены несколько секунд назад/i)
+    const select = screen.getByRole('combobox', { name: 'Доступность' })
+    expect(select).toHaveValue('all')
+    const table = screen.getByRole('table')
+    const links = within(table).getAllByRole('link')
+    expect(links).toHaveLength(5)
+    await user.selectOptions(select, 'online')
+    expect(within(table).getAllByRole('link')).toHaveLength(3)
+    expect(within(table).getAllByRole('link')[0]).toHaveTextContent('Анна Ким')
+    expect(within(table).getAllByRole('link')[1]).toHaveTextContent('Дарья Соколова')
+    expect(within(table).getAllByRole('link')[2]).toHaveTextContent('Ольга Юдина')
+    await user.type(screen.getByPlaceholderText(/Найти специалиста/i), 'kim')
+    expect(within(table).getAllByRole('link')).toHaveLength(1)
+    expect(within(table).getAllByRole('link')[0]).toHaveTextContent('Анна Ким')
+    await user.type(screen.getByPlaceholderText(/Найти специалиста/i), 'querty')
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Специалисты не найдены. Измените поисковый запрос или сбросьте фильтр'),
+    ).toBeInTheDocument()
+    await user.clear(screen.getByPlaceholderText(/Найти специалиста/i))
+    await user.type(screen.getByPlaceholderText(/Найти специалиста/i), 'abr')
+    await user.selectOptions(select, 'all')
+    expect(within(screen.getByRole('table')).getAllByRole('link')).toHaveLength(1)
+    expect(within(screen.getByRole('table')).getAllByRole('link')[0]).toHaveTextContent('Илья Абрамов')
+  })
+
   it('поиск специалистов отображает пустое состояние', async () => {
     const user = userEvent.setup()
     renderRoute('/team')

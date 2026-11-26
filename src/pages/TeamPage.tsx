@@ -5,10 +5,12 @@ import { agentStatusLabels } from '../domain/labels'
 import { useAsyncData } from '../hooks/useAsyncData'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import type { Agent } from '../domain/types'
 
 export function TeamPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<Agent['status'] | 'all'>('all')
   const result = useAsyncData((signal) => relayDeskApi.getTeam(signal), 'team')
   if (result.status === 'loading') return <LoadingState label="Загружаем команду" />
   if (result.status === 'error') return <ErrorState onRetry={result.retry} />
@@ -16,8 +18,9 @@ export function TeamPage() {
   const normalizedQuery = query.trim().toLocaleLowerCase('ru')
   const visibleAgents = result.data.agents.filter(
     (agent) =>
-      !normalizedQuery ||
-      `${agent.name} ${agent.email} ${agent.role}`.toLocaleLowerCase('ru').includes(normalizedQuery),
+      (!normalizedQuery ||
+        `${agent.name} ${agent.email} ${agent.role}`.toLocaleLowerCase('ru').includes(normalizedQuery)) &&
+      (agent.status === statusFilter || statusFilter === 'all'),
   )
   const onlineCount = result.data.agents.filter((agent) => agent.status === 'online').length
   const busyCount = result.data.agents.filter((agent) => agent.status === 'busy').length
@@ -62,26 +65,45 @@ export function TeamPage() {
         </article>
       </div>
       <section className="panel team-table-panel" aria-labelledby="specialists-heading">
-        <div className="panel-header">
+        <div className="panel-header team-page-filters">
           <div>
             <h2 id="specialists-heading">Специалисты</h2>
             <p>Данные обновлены несколько секунд назад</p>
           </div>
-          <label className="compact-search">
-            <span aria-hidden="true">⌕</span>
-            <span className="sr-only">Поиск специалиста</span>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              type="search"
-              placeholder="Найти специалиста"
-            />
-          </label>
+          <div className="filters-wrap">
+            <label className="compact-search">
+              <span aria-hidden="true">⌕</span>
+              <span className="sr-only">Поиск специалиста</span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                type="search"
+                placeholder="Найти специалиста"
+              />
+            </label>
+            <label htmlFor="status-filter">
+              <span className="sr-only">Доступность</span>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as Agent['status'] | 'all')}
+              >
+                <option value="all">Все статусы</option>
+                {Object.entries(agentStatusLabels).map(([status, label]) => {
+                  return (
+                    <option value={status} key={status}>
+                      {label}
+                    </option>
+                  )
+                })}
+              </select>
+            </label>
+          </div>
         </div>
         <div className="table-wrap">
           {visibleAgents.length === 0 && (
             <p className="panel inline-empty" role="status">
-              Специалисты не найдены. Измените поисковый запрос
+              Специалисты не найдены. Измените поисковый запрос или сбросьте фильтр
             </p>
           )}
           {visibleAgents.length !== 0 && (
