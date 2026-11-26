@@ -830,7 +830,8 @@ tbody th small,
   align-items: center;
   justify-content: center;
 }
-.filter-submit {
+.filter-submit,
+.filter-reset {
   min-height: 38px;
   padding: 0 14px;
   border: 1px solid var(--accent);
@@ -840,6 +841,9 @@ tbody th small,
   font-size: 0.75rem;
   font-weight: 750;
   cursor: pointer;
+}
+.filter-reset {
+  justify-self: start;
 }
 .filter-search {
   display: flex;
