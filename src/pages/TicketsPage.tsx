@@ -18,6 +18,15 @@ export function TicketsPage() {
   const sla = (searchParams.get('sla') ?? 'all') as 'all' | 'overdue'
   const assignee = searchParams.get('assignee') ?? 'all'
   const organization = searchParams.get('organization') ?? 'all'
+  const hasActiveFilters =
+    query !== '' ||
+    sort !== 'updated_desc' ||
+    status !== 'all' ||
+    queueId !== 'all' ||
+    priority !== 'all' ||
+    sla !== 'all' ||
+    assignee !== 'all' ||
+    organization !== 'all'
 
   const [prevQuery, setPrevQuery] = useState(query)
   if (query !== prevQuery) {
@@ -66,7 +75,14 @@ export function TicketsPage() {
           <h2 className="ticket-view-title">Все заявки</h2>
         </div>
 
-        <form className="filters" onSubmit={submitSearch}>
+        <form
+          className="filters"
+          onSubmit={submitSearch}
+          onReset={(e) => {
+            e.preventDefault()
+            resetAllFilters()
+          }}
+        >
           <label className="filter-search">
             <span className="sr-only">Поиск заявок</span>
             <span aria-hidden="true">⌕</span>
@@ -150,6 +166,11 @@ export function TicketsPage() {
                 ))}
               </select>
             </label>
+            {hasActiveFilters && (
+              <button className="filter-reset" type="reset">
+                Сбросить фильтры
+              </button>
+            )}
           </div>
         </form>
 
